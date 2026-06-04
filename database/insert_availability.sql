@@ -1,0 +1,14 @@
+INSERT INTO availability (doctor_id, day) VALUES
+(1, 'Monday'), (1, 'Wednesday'), (1, 'Friday'),
+(2, 'Tuesday'), (2, 'Thursday'), (2, 'Saturday'),
+(3, 'Monday'), (3, 'Tuesday'), (3, 'Thursday'),
+(4, 'Wednesday'), (4, 'Friday'), (4, 'Saturday'),
+(5, 'Monday'), (5, 'Wednesday'), (5, 'Friday'),
+(6, 'Tuesday'), (6, 'Thursday'), (6, 'Saturday'),
+(7, 'Monday'), (7, 'Tuesday'), (7, 'Wednesday'),
+(8, 'Wednesday'), (8, 'Thursday'), (8, 'Friday'),
+(9, 'Monday'), (9, 'Thursday'), (9, 'Saturday'),
+(10, 'Tuesday'), (10, 'Wednesday'), (10, 'Friday'),
+(11, 'Monday'), (11, 'Wednesday'), (11, 'Saturday'),
+(12, 'Tuesday'), (12, 'Thursday'), (12, 'Friday'),
+(13, 'Monday'), (13, 'Tuesday'), (13, 'Thursday');

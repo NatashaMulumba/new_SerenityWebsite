@@ -1,0 +1,4 @@
+flask # web framework
+flask-cors # allows communicatio from HTML to Flash backend
+google-generativeai # the Gemini API library
+python-dotenv # read API keys from the .env file
