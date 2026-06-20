@@ -1,0 +1,149 @@
+
+/* standardise the website */
+*{
+    margin: 0;
+    paddig: 0;
+    box-sizing: border-box;
+}
+
+/*  Ensure the website smoothly scrolls as it navigates the page*/
+html{
+    scroll-behavior: smooth;
+}
+
+:root{
+
+    /* Define vairables for website colour pallete */
+    --green: #5f7766;
+    --green-deep: #3f5246;
+    --gold: #c9a96e;
+    --cream: #f7f4ee;
+    --ink: #2b2a26;
+    --white: #ffffff;
+
+    /* Fonts */
+    --font-display: 'Fraunces',serif;
+     --font-body: 'Inter', sans-serif;
+
+     /* Spacing scale — base unit of 8px, scaling up */
+    --space-xs: 0.5rem;   /* 8px  */
+    --space-sm: 1rem;     /* 16px */
+    --space-md: 1.5rem;   /* 24px */
+    --space-lg: 2.5rem;   /* 40px */
+    --space-xl: 4rem;     /* 64px */
+
+
+
+}
+
+body{
+    font-family: var(--font-display);
+    font-weight: 400;
+    color: var(--ink);
+    background: var(--white);
+
+}
+
+img {
+    max-width: 100%;
+    display:block;
+}
+
+a {
+    color:inherit;
+    text-decoration:none;
+}
+
+ul {
+    list-style: none;
+}
+
+h1,h2,h3 {
+    font-family: var(--font-display);
+}
+
+
+
+/*---------------NAVBAR ------------------------*/
+
+
+.navbar{
+
+    position: sticky;
+    top:0;
+    z-index: 100;
+    background: var(--white);
+    border-bottom: 1px solid var(--green);
+}
+
+.navbar-container{
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--space-sm) var(--space-lg);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.navbar-logo{
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.25rem;
+    color: var(--green-deep);
+
+}
+
+.logo-icon{
+    height: 128px;
+    width: auto;
+}
+
+.navbar-menu {
+    display: flex;
+    gap: var(--space-lg);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    font-weight: 500;
+
+}
+
+.navbar-menu a {
+    color: var(--ink);
+    transition: color 0.2s ease;
+}
+
+.navbar-menu a:hover {
+    color: var(--green);
+}
+    
+
+hr{
+    background-color: var(--green);
+    border: none;
+    height: 24px;
+    
+}
+
+
+/*---------------NAVBAR ------------------------*/
+
+
+/*----------------HERO/HOME SECTION-----------*/
+
+#home {
+    min-height: calc(100vh-73px);
+}
+
+
+
+
+
+
+
+
+
+/*----------------HERO/HOME SECTION-----------*/
+
