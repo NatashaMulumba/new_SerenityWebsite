@@ -213,3 +213,151 @@ hr{
 
 
 /*-------AboutMe SECTION-----------*/
+
+
+/*-----------OUR TEAM SECTION--------*/
+
+#ourTeam {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--space-xl) var(--space-lg);
+}
+
+#ourTeam > h1 {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 3vw, 2.5rem);
+    color: var(--green-deep);
+    text-align: center;
+    margin-bottom: var(--space-md);
+}
+
+/* Pills */
+
+.pills {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-xs);
+    margin-bottom: var(--space-sm);
+}
+
+.pill {
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    color: var(--green-deep);
+    background: var(--white);
+    border: 1.5px solid var(--green);
+    border-radius: 999px;
+    padding: 6px 16px;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.pill:hover {
+    background: var(--cream);
+}
+
+.pill.active {
+    background: var(--green);
+    color: var(--white);
+    border-color: var(--green);
+}
+
+
+/* Nudge text */
+
+.team-nudge {
+    text-align: center;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    color: var(--ink);
+    margin-bottom: var(--space-xl);
+}
+
+.nudge-btn {
+    background: none;
+    border: none;
+    font: inherit;
+    color: var(--green-deep);
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+}
+
+.nudge-btn:hover {
+    color: var(--green);
+}
+
+/* Grid of cards */
+
+.team-grids {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-md);
+}
+
+.therapist-card {
+    background: var(--white);
+    border: 1px solid #e5e2d9;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.therapistImage {
+    height: 160px;
+}
+
+.therapist-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.therapist-text {
+    padding: var(--space-sm);
+}
+
+.therapist-text h2 {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    color: var(--green-deep);
+    margin-bottom: 2px;
+}
+
+.therapist-role {
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    color: var(--ink);
+    opacity: 0.7;
+    margin-bottom: var(--space-xs);
+}
+
+.therapist-tags {
+    font-family: var(--font-body);
+    font-size: 0.72rem;
+    color: var(--gold);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: var(--space-xs);
+    line-height: 1.5;
+}
+
+.therapist-availability,
+.therapist-fee {
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    color: var(--ink);
+    opacity: 0.75;
+}
+
+.therapist-fee {
+    font-weight: 600;
+    margin-top: 2px;
+}
+
+
+
+
+/*-----------OUR TEAM SECTION--------*/
