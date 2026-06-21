@@ -358,6 +358,123 @@ hr{
 }
 
 
-
-
 /*-----------OUR TEAM SECTION--------*/
+
+
+/* ---------Service Section --------- */
+
+#services {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--space-xl) var(--space-lg);
+}
+
+
+#services > h2 {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 3vw, 2.5rem);
+    color: var(--green-deep);
+    text-align: center;
+    margin-bottom: var(--space-md);
+}
+
+.services-intro {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    color: var(--ink);
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto var(--space-lg);
+    line-height: 1.6;
+}
+
+/* arranges the 3 service cards side by side.*/
+.service-package {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-md);
+}
+
+
+/*  give each card rounded corners, soft shadow and clip image corners to match rounded card corners */
+.service-card {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+}
+
+.service-text {
+    background: var(--gold);
+    padding: var(--space-md);
+    flex-grow: 1;
+}
+
+/* fixes a consistent height so all three cards based on each photo's original size/aspect ratio */
+.service-image {
+    height: 180px;
+}
+
+/* croppe image accordingly */
+.service-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+
+
+
+.service-text h3 {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    color: var(--green-deep);
+    margin-bottom: var(--space-sm);
+}
+
+
+.service-format {
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin-bottom: var(--space-sm);
+}
+
+.service-fit {
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-style: italic;
+    line-height: 1.5;
+    margin-bottom: var(--space-sm);
+    opacity: 0.9;
+}
+
+.service-logistics {
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    font-weight: 600;
+    opacity: 0.8;
+}
+
+.service-cta {
+    background: var(--green-deep);
+    padding: var(--space-sm) var(--space-md);
+}
+
+
+
+.service-cta-btn {
+    background: none;
+    border: none;
+    font: inherit;
+    color: var(--white);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+}
+
+
+
+/* ---------Service Section --------- */
