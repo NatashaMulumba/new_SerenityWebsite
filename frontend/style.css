@@ -478,3 +478,76 @@ hr{
 
 
 /* ---------Service Section --------- */
+
+
+
+/*----------What to expect ---------- */
+
+#what-to-expect {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--space-xl) var(--space-lg);
+}
+
+#what-to-expect > h1 {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 3vw, 2.5rem);
+    color: var(--green-deep);
+    text-align: center;
+    margin-bottom: var(--space-xl);
+}
+
+/* Container arranges the 3 staggered cards in a row */
+#what-to-expect {
+    display: flex;
+    flex-direction: column;
+}
+
+.expect-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-lg);
+}
+
+/* Each card needs relative positioning */
+.background-box {
+    position: relative;
+    background: #e5e2dc;
+    padding: var(--space-md);
+    margin-top: var(--space-lg);
+}
+
+/* created colored block behind each card  */
+.background-box::before {
+    content: "";
+    position: absolute;
+    top: calc(-1 * var(--space-lg));
+    left: calc(-1 * var(--space-md));
+    width: 100%;
+    height: 240px;
+    background: var(--green);
+    z-index: -1;
+}
+
+/* Alternate the offset block color: 1st and 3rd cards
+   get sage, middle card gets gold */
+.background-box:nth-child(2)::before {
+    background: var(--gold);
+}
+
+.background-box p {
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: var(--ink);
+}
+
+/*-----------------WhatToExpect Section ------------------*/
+
+
+
+
+
+
+
+
