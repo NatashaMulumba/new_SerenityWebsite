@@ -545,9 +545,123 @@ hr{
 /*-----------------WhatToExpect Section ------------------*/
 
 
+/* ------------------- Testimonial ----------------------*/
+
+
+
+#Testimonial {
+    background: var(--gold);
+    padding: var(--space-xl) var(--space-lg);
+}
+
+#Testimonial > h1 {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 3vw, 2.5rem);
+    color: var(--green-deep);
+    text-align: center;
+    margin-bottom: var(--space-lg);
+}
+
+/* Each testimonial card: hidden by default. Only the
+   one with .active shows. */
+.testimonial-card {
+    display: none;
+    max-width: 700px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.testimonial-card.active {
+    display: block;
+}
+
+.testimonial-card p {
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--ink);
+    margin-bottom: var(--space-sm);
+}
+
+.testimonial-card h2 {
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--green-deep);
+}
+
+/* Dot indicators below the testimonial */
+.testimonial-dots {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-xs);
+    margin-top: var(--space-lg);
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--ink);
+    opacity: 0.3;
+    cursor: pointer;
+}
+
+.dot.active {
+    opacity: 1;
+}
+
+
+/* ------------------- Testimonial ----------------------*/
+
+
+/* -----------------FOOTER ---------------------- */
+
+
+footer {
+    background: var(--green-deep);
+    padding: var(--space-xl) var(--space-lg);
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.footer-menu {
+    display: flex;
+    gap: var(--space-lg);
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.footer-menu a {
+    color: var(--white);
+    opacity: 0.85;
+    transition: opacity 0.2s ease;
+}
+
+.footer-menu a:hover {
+    opacity: 1;
+}
+
+.footer-container p {
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    color: var(--white);
+    opacity: 0.6;
+}
 
 
 
 
 
 
+
+/* -----------------FOOTER ---------------------- */
