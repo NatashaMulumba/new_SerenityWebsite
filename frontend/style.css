@@ -178,9 +178,38 @@ hr{
 
 
 /*-------AboutMe SECTION-----------*/
+.aboutMe-container{
+
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: calc(100vh-73px);
+
+}
+
+.aboutMe-image, .aboutMe-image img{
+    height:100%;
+    width: 100%;
+    object-fit:cover;
+
+}
+
+.aboutme-text{
+    background: var(--cream);
+    display: flex;
+    flex-direction:column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-xl);
+}
+
+.aboutme-text h1 {
+    text-align: center;
+     margin-bottom: var(--space-md);
+}
+
+.aboutme-text p {
+    text-align: left;
+}
 
 
-
-
-
-
+/*-------AboutMe SECTION-----------*/
