@@ -76,60 +76,175 @@
     <hr>
     <!--Meet our team section -->
     <section id="ourTeam">
-    <!--Therapist A image and details-->
-            <div class="therapist-card">
+        <div class="pills">
+            <button class="pill active" type="button" data-filter="all">All</button>
+            <button class="pill" type="button" data-filter="anxiety-mood">Anxiety & Mood</button>
+            <button class="pill" type="button" data-filter="trauma-grief">Trauma & Grief</button>
+            <button class="pill" type="button" data-filter="relationships-family">Relationships & Family</button>
+            <button class="pill" type="button" data-filter="life-transitions">Life Transitions</button>
+            <button class="pill" type="button" data-filter="workplace-career">Workplace & Career</button>
+            <button class="pill" type="button" data-filter="severe-mental-illness">Severe Mental Illness</button>
+            <button class="pill" type="button" data-filter="recovery-abuse">Recovery & Abuse</button>
+            <button class="pill" type="button" data-filter="sleep">Sleep</button>
+        </div>
+
+        <p class="team-nudge">Not sure who's right for you? <button class="nudge-btn" type="button" onclick="openChat()">Ask SerenityBot to help you choose</button></p>
+     
+        <div class="therapist-card" data-categories="severe-mental-illness anxiety-mood">
                 <div class="therapistImage">
-                    <img src="site-images/Therapist_A.png" alt="Our Team Image" class="therapist-image">
+                    <img src="site-images/Therapist_A.png" alt="Dr Cambridge Allen" class="therapist-image">
                 </div>
-                <div class="therapist-text">
-                    <h2>Dr Amara Nkosi</h2>
-                    <p>Registered Counselling Psychologist
-                    Amara specialises in trauma and grief counselling, working primarily with young adults navigating loss, identity, and life transitions. 
-                    Her approach is gentle and person-centred, creating a space where clients feel safe to process their experiences at their own pace.</p>
-                </div> 
+            <div class="therapist-text">
+                <h2>Dr Cambridge Allen</h2>
+                <p class="therapist-role">Clinical Psychologist</p>
+                <p class="therapist-tags">Personality Disorders &middot; Mood Disorders &middot; Psychosis</p>
+                <p class="therapist-fee">Fee: R1200</p>
             </div>
-                <!--Therapist B image and details-->
-                <div class="therapist-card">
-                    <div class="therapistImage">
-                        <img src="site-images/Therapist_B.png" alt="Our Team Image" class="therapist-image">
-                    </div>
-                    <div class="therapist-text">
-                        <h2>Dr Amara Nkosi</h2>
-                        <p>Registered Counselling Psychologist
-                        Amara specialises in trauma and grief counselling, working primarily with young adults navigating loss, identity, and life transitions. 
-                        Her approach is gentle and person-centred, creating a space where clients feel safe to process their experiences at their own pace.</p>
-                    </div> 
-                </div> 
+        </div>
 
-                  <!--Therapist C image and details-->
+        <div class="therapist-card" data-categories="trauma-grief anxiety-mood relationships-family">
+            <div class="therapistImage">
+                <img src="site-images/Therapist_B.png" alt="Dr Shuri West" class="therapist-image">
+            </div>
+            <div class="therapist-text">
+                <h2>Dr Shuri West</h2>
+                <p class="therapist-role">Counselling Psychologist</p>
+                <p class="therapist-tags">Grief &middot; Depression &middot; Relationship Issues</p>
+                <p class="therapist-fee">Fee: R1100</p>
+            </div>
+        </div>
 
-                  <div class="therapist-card">
-                    <div class="therapistImage">
-                        <img src="site-images/Therapist_C.png" alt="Our Team Image" class="therapist-image">
-                    </div>
-                    <div class="therapist-text">
-                        <h2>Dr Amara Nkosi</h2>
-                    <p>Registered Counselling Psychologist
-                    Amara specialises in trauma and grief counselling, working primarily with young adults navigating loss, identity, and life transitions. 
-                    Her approach is gentle and person-centred, creating a space where clients feel safe to process their experiences at their own pace.</p>                    </div> 
-                </div> 
+        <div class="therapist-card" data-categories="anxiety-mood trauma-grief severe-mental-illness">
+            <div class="therapistImage">
+                <img src="site-images/Therapist_C.png" alt="Dr Okoye TChalla" class="therapist-image">
+            </div>
+            <div class="therapist-text">
+                <h2>Dr Okoye TChalla</h2>
+                <p class="therapist-role">Clinical Psychologist</p>
+                <p class="therapist-tags">Mood Disorders &middot; Trauma and PTSD &middot; Personality Disorders</p>
+                <p class="therapist-fee">Fee: R1300</p>
+            </div>
+        </div>
 
+        <div class="therapist-card" data-categories="anxiety-mood trauma-grief relationships-family life-transitions recovery-abuse">
+            <div class="therapistImage">
+                <img src="site-images/Therapist_D.png" alt="Dr Nakia Parker" class="therapist-image">
+            </div>
+            <div class="therapist-text">
+                <h2>Dr Nakia Parker</h2>
+                <p class="therapist-role">Clinical Psychologist</p>
+                <p class="therapist-tags">Anxiety &middot; Depression &middot; Trauma &middot; Grief &middot; Relationships &middot; Identity &middot; Substance Use</p>
+                <p class="therapist-fee">Fee: R1150</p>
+            </div>
+        </div>
 
-                <!--Therapist D image and details-->
+        <div class="therapist-card" data-categories="anxiety-mood life-transitions">
+            <div class="therapistImage">
+                <img src="site-images/Therapist_E.png" alt="Dr Wanda Mokoena" class="therapist-image">
+            </div>
+            <div class="therapist-text">
+                <h2>Dr Wanda Mokoena</h2>
+                <p class="therapist-role">Clinical Psychologist</p>
+                <p class="therapist-tags">Anxiety &middot; Mood Disorders &middot; Life Transitions</p>
+                <p class="therapist-fee">Fee: R1200</p>
+            </div>
+        </div>
 
-                <div class="therapist-card">
-                    <div class="therapistImage">
-                        <img src="site-images/Therapist_D.png" alt="Our Team Image" class="therapist-image">
-                    </div>
-                    <div class="therapist-text">
-                        <h2>Dr Amara Nkosi</h2>
-                        <p>Registered Counselling Psychologist
-                        Amara specialises in trauma and grief counselling, working primarily with young adults navigating loss, identity, and life transitions. 
-                        Her approach is gentle and person-centred, creating a space where clients feel safe to process their experiences at their own pace.</p>
-                    </div> 
-                </div> 
+        <div class="therapist-card" data-categories="trauma-grief">
+            <div class="therapistImage">
+                <img src="site-images/Therapist_F.png" alt="Dr Madison Govender" class="therapist-image">
+            </div>
+            <div class="therapist-text">
+                <h2>Dr Madison Govender</h2>
+                <p class="therapist-role">Clinical Psychologist</p>
+                <p class="therapist-tags">Trauma and PTSD</p>
+                <p class="therapist-fee">Fee: R1350</p>
+            </div>
+        </div>
 
+        <div class="therapist-card" data-categories="workplace-career">
+            <div class="therapistImage">
+                <img src="site-images/Therapist_G.png" alt="Dr Natasha Dlamini" class="therapist-image">
+            </div>
+            <div class="therapist-text">
+                <h2>Dr Natasha Dlamini</h2>
+                <p class="therapist-role">Industrial Psychologist</p>
+                <p class="therapist-tags">Financial Psychology &middot; Workplace Stress and Burnout &middot; Career Guidance</p>
+                <p class="therapist-fee">Fee: R1400</p>
+            </div>
+        </div>
 
+        <div class="therapist-card" data-categories="anxiety-mood sleep">
+            <div class="therapistImage">
+                <img src="site-images/Therapist_H.png" alt="Dr Peter Mercer" class="therapist-image">
+            </div>
+            <div class="therapist-text">
+                <h2>Dr Peter Mercer</h2>
+                <p class="therapist-role">Clinical Psychologist</p>
+                <p class="therapist-tags">Anxiety &middot; Sleep and Insomnia &middot; Mood Disorders</p>
+                <p class="therapist-fee">Fee: R1100</p>
+            </div>
+        </div>
+
+        <div class="therapist-card" data-categories="life-transitions trauma-grief">
+            <div class="therapistImage">
+                <img src="site-images/Therapist_I.png" alt="Dr Tony Livingston" class="therapist-image">
+            </div>
+            <div class="therapist-text">
+                <h2>Dr Tony Livingston</h2>
+                <p class="therapist-role">Clinical Psychologist</p>
+                <p class="therapist-tags">Life Transitions &middot; Grief &middot; Coping Skills</p>
+                <p class="therapist-fee">Fee: R1050</p>
+            </div>
+        </div>
+
+        <div class="therapist-card" data-categories="anxiety-mood workplace-career">
+            <div class="therapistImage">
+                <img src="site-images/Therapist_J.png" alt="Dr Bruce Maryland" class="therapist-image">
+            </div>
+            <div class="therapist-text">
+                <h2>Dr Bruce Maryland</h2>
+                <p class="therapist-role">Clinical Psychologist</p>
+                <p class="therapist-tags">Anxiety &middot; Depression &middot; Workplace Issues</p>
+                <p class="therapist-fee">Fee: R1000</p>
+            </div>
+        </div>
+
+        <div class="therapist-card" data-categories="trauma-grief recovery-abuse workplace-career">
+            <div class="therapistImage">
+                <img src="site-images/Therapist_K.png" alt="Dr Ayo Zhang" class="therapist-image">
+            </div>
+            <div class="therapist-text">
+                <h2>Dr Ayo Zhang</h2>
+                <p class="therapist-role">Counselling Psychologist</p>
+                <p class="therapist-tags">Trauma and PTSD &middot; Narcissistic Abuse Recovery &middot; Career Guidance</p>
+                <p class="therapist-fee">Fee: R1100</p>
+            </div>
+        </div>
+
+        <div class="therapist-card" data-categories="relationships-family">
+            <div class="therapistImage">
+                <img src="site-images/Therapist_L.png" alt="Dr Fury Khang" class="therapist-image">
+            </div>
+            <div class="therapist-text">
+                <h2>Dr Fury Khang</h2>
+                <p class="therapist-role">Clinical Psychologist</p>
+                <p class="therapist-tags">Relationship Issues &middot; Family Conflict</p>
+                <p class="therapist-fee">Fee: R1200</p>
+            </div>
+        </div>
+
+        <div class="therapist-card" data-categories="anxiety-mood">
+            <div class="therapistImage">
+                <img src="site-images/Therapist_M.png" alt="Dr Ramonda Obiagu" class="therapist-image">
+            </div>
+            <div class="therapist-text">
+                <h2>Dr Ramonda Obiagu</h2>
+                <p class="therapist-role">Clinical Psychologist</p>
+                <p class="therapist-tags">Depression &middot; Anxiety &middot; Emotional Disturbance</p>
+                <p class="therapist-fee">Fee: R1250</p>
+            </div>
+        </div>
     </section>
 
     <hr>
