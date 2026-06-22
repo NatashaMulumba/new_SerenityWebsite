@@ -665,3 +665,219 @@ footer {
 
 
 /* -----------------FOOTER ---------------------- */
+
+
+
+
+/*--------------------CHATBOT STYLING SECTION-------------------------*/
+
+
+
+/* Floating toggle button — now a pill shape with icon + label,
+   instead of a circular icon-only button */
+#chat-toggle-btn {
+    position: fixed;
+    bottom: var(--space-lg);
+    right: var(--space-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    background: var(--white);
+    border: 1.5px solid var(--ink);
+    border-radius: 999px;
+    padding: 10px 20px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    z-index: 200;
+    font-family: var(--font-body);
+}
+
+#chat-toggle-btn:hover {
+    background: var(--cream);
+}
+
+.toggle-icon {
+    display: flex;
+    align-items: center;
+    color: var(--ink);
+}
+
+.toggle-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.toggle-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--ink);
+}
+/* Chat window — fixed position, anchored above the
+   toggle button. Hidden by default; JS will toggle
+   a class (e.g. .open) to reveal it later. */
+#chat-window {
+    position: fixed;
+    bottom: calc(var(--space-lg) + 70px);
+    right: var(--space-lg);
+    width: 360px;
+    height: 500px;
+    background: var(--white);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    z-index: 200;
+
+    /* Stack header, messages, input vertically */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    /* Hidden by default — JS will add a class to show it */
+    display: none;
+}
+
+#chat-window.open {
+    display: flex;
+}
+
+/* Header bar */
+#chatbot-header {
+    background: var(--green-deep);
+    color: var(--white);
+    padding: var(--space-sm) var(--space-md);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+}
+
+#chatbot-header-info {
+    display: flex;
+    flex-direction: column;
+}
+
+#chat-bot-title {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+#chat-bot-subtitle {
+    font-family: var(--font-body);
+    font-size: 0.72rem;
+    opacity: 0.8;
+}
+
+#close-button {
+    background: none;
+    border: none;
+    color: var(--white);
+    font-size: 1rem;
+    cursor: pointer;
+    opacity: 0.85;
+}
+
+#close-button:hover {
+    opacity: 1;
+}
+
+/* Scrollable message log — grows to fill available space
+   between the header and input bar */
+#chat-messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: var(--space-sm);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+
+    /* Forces this to visually appear BELOW the input area
+       even though it comes first in the HTML source */
+    order: 1;
+}
+
+/* Individual message bubble */
+.chat-message {
+    background: var(--cream);
+    border-radius: 8px;
+    padding: var(--space-sm);
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--ink);
+    max-width: 85%;
+}
+
+.bot-message {
+    align-self: flex-start;
+}
+
+/* Reserved for later: user's own messages, if you add
+   that class when wiring up the JS */
+.user-message {
+    align-self: flex-end;
+    background: var(--green);
+    color: var(--white);
+}
+
+.chat-menu {
+    margin-top: var(--space-xs);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.chat-menu li {
+    font-size: 0.82rem;
+    cursor: pointer;
+    padding: 4px 0;
+}
+
+.chat-menu-hint {
+    font-size: 0.7rem;
+    opacity: 0.6;
+    margin-top: var(--space-xs);
+    font-style: italic;
+}
+
+/* Input area — pinned to the bottom via flex order,
+   regardless of its position in the HTML */
+#chat-input-area {
+    flex-shrink: 0;
+    display: flex;
+    gap: var(--space-xs);
+    padding: var(--space-sm);
+    border-top: 1px solid #e5e2d9;
+    order: 2;
+}
+
+#chat-input {
+    flex-grow: 1;
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 999px;
+    outline: none;
+}
+
+#chat-input:focus {
+    border-color: var(--green);
+}
+
+#chat-send-btn {
+    background: var(--green-deep);
+    color: var(--white);
+    border: none;
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#chat-send-btn:hover {
+    background: var(--green);
+}
+
+/*--------------------CHATBOT STYLING SECTION-------------------------*/
