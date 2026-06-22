@@ -416,14 +416,25 @@
 
                  <!--User input area -->
                  <div id="chat-input-area">
-                    <input 
-                        type="text" 
-                        id="chat-input" 
-                        placeholder="Type your message..." 
-                        aria-label="Type your message"
-                        autocomplete="off"
-                    >
-                    <button id="chat-send-btn" aria-label="Send message">Send</button>
+                        <div id="chat-input-wrapper">
+                            <!-- Add Emoji button -->
+                            <button id="emoji-btn" type="button" aria-label="Open emoji picker">
+                                    <img src="site-images/smile.svg" alt="">
+                            </button>
+                            <input 
+                            type="text" 
+                            id="chat-input" 
+                            placeholder="Type your message..." 
+                            aria-label="Type your message"
+                            autocomplete="off"
+                            >
+
+
+                        </div>
+                            <!-- Added a send button icon-->
+                        <button id="chat-send-btn" aria-label="Send message">
+                            <img src="site-images/sendmail.svg" alt="">
+                        </button>
                 </div>
 
                 <!-- Where the scrollable area the converation takes place-->
