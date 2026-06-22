@@ -2,7 +2,7 @@
 /* standardise the website */
 *{
     margin: 0;
-    paddig: 0;
+    padding: 0;
     box-sizing: border-box;
 }
 
@@ -712,9 +712,8 @@ footer {
     font-weight: 600;
     color: var(--ink);
 }
-/* Chat window — fixed position, anchored above the
-   toggle button. Hidden by default; JS will toggle
-   a class (e.g. .open) to reveal it later. */
+/* Chat window fixed position, anchored above the
+   toggle button. Hidden by default;  */
 #chat-window {
     position: fixed;
     bottom: calc(var(--space-lg) + 70px);
@@ -731,8 +730,8 @@ footer {
     flex-direction: column;
     overflow: hidden;
 
-    /* Hidden by default — JS will add a class to show it */
-    display: none;
+    /* use hidden to hid chat-window */
+    display: hidden;
 }
 
 #chat-window.open {
@@ -754,6 +753,26 @@ footer {
     display: flex;
     flex-direction: column;
 }
+
+
+.chatbot-left {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+#chatbot-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
 
 #chat-bot-title {
     font-family: var(--font-display);
@@ -780,8 +799,7 @@ footer {
     opacity: 1;
 }
 
-/* Scrollable message log — grows to fill available space
-   between the header and input bar */
+/* Scrollable message log ,grows to fill available space between the header and input bar */
 #chat-messages {
     flex-grow: 1;
     overflow-y: auto;
@@ -790,8 +808,7 @@ footer {
     flex-direction: column;
     gap: var(--space-sm);
 
-    /* Forces this to visually appear BELOW the input area
-       even though it comes first in the HTML source */
+    /* Forces this to visually appear BELOW the input area */
     order: 1;
 }
 
@@ -844,19 +861,49 @@ footer {
 #chat-input-area {
     flex-shrink: 0;
     display: flex;
+    align-items: center;
     gap: var(--space-xs);
     padding: var(--space-sm);
     border-top: 1px solid #e5e2d9;
     order: 2;
 }
 
+/* wrap text and emoji into pill shaped message field */
+#chat-input-wrapper {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 999px;
+    padding: 0px 6px 0px 12px;
+    background: var(--white);
+    transition: border-color 0.2s ease;
+}
+
+/* When the input inside is focused, highlight the pill border instead */
+#chat-input-wrapper:focus-within {
+    border-color: var(--gold);
+}
+
+#chat-input-wrapper img,
+#chat-send-btn img {
+    display: inline-flex;    /* overrides the global display: block for these icons only */
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+}
+
+
+/* removed border and background around text */
 #chat-input {
     flex-grow: 1;
     font-family: var(--font-body);
     font-size: 0.85rem;
-    padding: 8px 12px;
-    border: 1px solid #ccc;
-    border-radius: 999px;
+    padding: 0;
+    height: 34px;
+    border: none;           /* remove border */
+    border-radius: 0;       /* ← remove rounded edges that create pill shaped corners */
+    background: transparent;
     outline: none;
 }
 
@@ -865,19 +912,49 @@ footer {
 }
 
 #chat-send-btn {
-    background: var(--green-deep);
+    background: var(--green);
     color: var(--white);
     border: none;
-    border-radius: 999px;
-    padding: 8px 16px;
-    font-family: var(--font-body);
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0; /* prevent circle from getting squished */
+    cursor: pointer; 
 }
 
 #chat-send-btn:hover {
     background: var(--green);
+}
+
+/* Style the emoji button to sit flush inside the pill */
+#emoji-btn {
+    background: none; /* remove background from emoji img */
+    border: none;     /* remove border from emoji img */
+    cursor: pointer;
+    padding: 0 4px;
+    display: flex;
+    align-items: center;
+    opacity: 0.6;
+}
+
+#emoji-btn img {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+   
+}
+
+#emoji-btn:hover {
+    opacity: 1;
+}
+
+#chat-send-btn img {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
 }
 
 /*--------------------CHATBOT STYLING SECTION-------------------------*/
