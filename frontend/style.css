@@ -1053,6 +1053,8 @@ footer {
 
 }
 
+/*-----------------TABLET size: 768px and below ------*/
+
 
 /* -----------------MOBILE size: 480px and below ------ */
 @media (max-width: 480px) {
@@ -1109,3 +1111,7 @@ footer {
         bottom: calc(var(--space-sm) + 56px);
     }
 }
+
+/* -----------------MOBILE size: 480px and below ------ */
+
+/*-----------------RESPONSIVE DESIGN -------------------------*/
