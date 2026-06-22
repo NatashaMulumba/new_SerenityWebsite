@@ -999,6 +999,16 @@ footer {
 
     }
 
+    /* reduce about me  heading and paragraph size on tablet */
+    .aboutme-text h1 {
+        font-size: 1.5rem;   
+    }
+
+    .aboutme-text p {
+        font-size: 0.85rem;    
+        line-height: 1.6;
+    }
+
     .aboutMe-image, .aboutMe-image img {
         height: 300px;
         width: 100%;
@@ -1026,22 +1036,76 @@ footer {
     }
 
     .background-box::before{
-        top:0;
+        content: "";
+        position: absolute;
+        top: 0;
         left: 0;
         width: 100%;
         height: 8px;
+        background: var(--green); 
+        z-index:1;   
     }
 
-   
+    .background-box:nth-child(2)::before {
+    background: var(--gold);      /* ← re-declare the gold  for the middle card */
+}
 
 
+}
 
 
+/* -----------------MOBILE size: 480px and below ------ */
+@media (max-width: 480px) {
 
+    /* Tighten all content sections so text has more room */
+    #ourTeam,
+    #services,
+    #what-to-expect {
+        padding: var(--space-lg) var(--space-sm);
+    }
 
+    /* hero text Reduce padding so text isn't squashed against edges */
+    .hero-text {
+        padding: var(--space-lg) var(--space-sm);
+    }
 
+    /* about me gets Same changes as hero section */
+    .aboutme-text {
+        padding: var(--space-lg) var(--space-sm);
+    }
 
+    .aboutme-text h1 {
+    font-size: 1.25rem;    
+    }
 
+    .aboutme-text p {
+        font-size: 0.8rem;     
+        line-height: 1.6;
+    }
 
+    /* Drop team grid to 1 col for mobile. */
+    .team-grids {
+        grid-template-columns: 1fr;
+    }
 
+    /* footer menu Stack nav links  vertically and centre them */
+    .footer-menu {
+        flex-direction: column;
+        align-items: center;
+        gap: var(--space-sm);
+    }
+
+    /* Pull chatbot toggle button it closer to the screen edge on small screens */
+    #chat-toggle-btn {
+        bottom: var(--space-sm);
+        right: var(--space-sm);
+        padding: 8px 14px;
+    }
+
+    /* make chatwindow fill majority of phone screen */
+    #chat-window {
+        width: calc(100vw - var(--space-md));
+        right: var(--space-xs);
+        bottom: calc(var(--space-sm) + 56px);
+    }
 }
