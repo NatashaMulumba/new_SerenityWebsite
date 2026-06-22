@@ -9,5 +9,5 @@ toggleBtn.addEventListener("click",function(){
 });
 
 closeBtn.addEventListener("click",function(){
-    chatWindow.classList.add("open");
+    chatWindow.classList.remove("open");
 });
