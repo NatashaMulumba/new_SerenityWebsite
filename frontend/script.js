@@ -7,7 +7,12 @@ const hamburger = document.querySelector(".hamburger")
 const navMenu = document.querySelector(".navbar-menu")
 const pills = document.querySelectorAll(".pill");
 const cards = document.querySelectorAll(".therapist-card"); // Select all pills and all therapist cards
-
+const testimonialCards = document.querySelectorAll(".testimonial-card");
+const dots = document.querySelectorAll(".dot");
+const chatInput = document.querySelector("#chat-input");
+const sendBtn = document.querySelector("#chat-send-btn");
+const chatMessages = document.querySelector("#chat-messages");
+let currentIndex = 0;
 // When Book session clicked, open up chatbot window //
 toggleBtn.addEventListener("click",function(){
     chatWindow.classList.add("open");
@@ -57,3 +62,23 @@ pills.forEach(function(pill) {
         });
     });
 });
+
+
+
+// Create an auto advance testimonal carousel
+// Extracted into a named function so both the timer AND the click can call it
+function goToSlide(index) {
+    testimonialCards.forEach(function(card) { card.classList.remove("active"); });
+    dots.forEach(function(d) { d.classList.remove("active"); });
+    testimonialCards[index].classList.add("active");
+    dots[index].classList.add("active");
+    currentIndex = index; // keep currentIndex in sync
+}
+
+// Auto-advance every 3 seconds
+setInterval(function() {
+    goToSlide((currentIndex + 1) % testimonialCards.length);
+}, 3000);
+
+
+
