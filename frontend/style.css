@@ -988,6 +988,10 @@ footer {
 /*-----------------TABLET size: 768px and below ------*/
 @media (max-width:768px){
 
+    .logo-icon {
+    height: 64px;    /* ← drop the size of the icon for tablet and mobile */
+}
+
    
     /* Add the styling for hamburger button shown only on tablet and mobile */
     .hamburger {
@@ -1023,6 +1027,8 @@ footer {
 
     .navbar-container{
         padding: var(--space-sm);
+      
+
     }
 
 
@@ -1032,13 +1038,14 @@ footer {
         flex-direction: column;
         position: absolute;
         top: 100%;
-        left: 0;
-        width: 100%;
+        right: 0; /*anchord drop down menu the right edge */
+        left: auto;
+        width: auto; /* fit container only*/
         background: var(--white);
-        border-bottom: 1px solid var(--green);
+        border-bottom: 1px solid var(--white);
         padding: var(--space-sm) var(--space-md);
         gap: var(--space-sm);
-        z-index: 100;
+        z-index: 200;
     }
 
 
