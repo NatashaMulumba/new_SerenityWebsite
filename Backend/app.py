@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 # import libraries for flask and google genai
 from flask import Flask, request, jsonify
 from flask_cors import CORS 
+from flask_mail import Mail, Message
 from google import genai
 import os
 import mysql.connector
@@ -13,6 +14,21 @@ CORS(app)
 
 load_dotenv()
 client = genai.Client(api_key=os.getenv('GEMINI_API'))
+
+
+# Configure Flask-Mail using environment variables
+app.config['MAIL_SERVER']   = os.getenv('MAIL_SERVER')
+app.config['MAIL_PORT']     = int(os.getenv('MAIL_PORT', 587))
+app.config['MAIL_USE_TLS']  = os.getenv('MAIL_USE_TLS', 'True') == 'True'
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+app.config['MAIL_DEFAULT_SENDER'] = (
+    os.getenv('MAIL_SENDER_NAME', 'Serenity Wellness Centre'),
+    os.getenv('MAIL_USERNAME')
+)
+
+mail = Mail(app)
+
 
 # Get prompt text from textfile
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
