@@ -689,6 +689,121 @@ function formatCalDate(str) {
 
 // --------------------CALENDER WIDGET FUNCTIONS ----------------------------------------------
 
+//-----------BOOKING SUMMARY -----------------
+// Renders the booking summary card for the user to confirm
+function showBookingSummary() {
+  const b = chatState.selectedDoctor;
+  const d = chatState.bookingData;
+  const doctorName = `Dr ${b.first_name} ${b.last_name}`;
+
+  chatState.phase = 'booking_summary';
+
+  showTypingIndicator();
+  setTimeout(() => {
+    hideTypingIndicator();
+    appendBotMessage("Here's a summary of your booking — please check everything before confirming.");
+
+    const card = document.createElement('div');
+    card.className = 'chat-message bot-message';
+    card.style.padding = '0';
+    card.style.background = 'none';
+    card.innerHTML = `
+      <div class="booking-summary-card">
+        <div class="bsc-header">Booking summary</div>
+        <div class="bsc-row"><span class="bsc-label">Therapist</span><span class="bsc-value">${doctorName}</span></div>
+        <div class="bsc-row"><span class="bsc-label">Date</span><span class="bsc-value">${formatCalDate(d.appt_date)}</span></div>
+        <div class="bsc-row"><span class="bsc-label">Time</span><span class="bsc-value">${d.appt_time}</span></div>
+        <div class="bsc-row"><span class="bsc-label">Name</span><span class="bsc-value">${d.patient_name}</span></div>
+        <div class="bsc-row"><span class="bsc-label">Date of birth</span><span class="bsc-value">${d.patient_dob}</span></div>
+        <div class="bsc-row"><span class="bsc-label">Phone</span><span class="bsc-value">${d.patient_phone}</span></div>
+        <div class="bsc-row"><span class="bsc-label">Email</span><span class="bsc-value">${d.patient_email}</span></div>
+        <div class="bsc-row"><span class="bsc-label">Emergency</span><span class="bsc-value">${d.emergency_name}, ${d.emergency_relationship}, ${d.emergency_number}</span></div>
+        <div class="bsc-row"><span class="bsc-label">Medications</span><span class="bsc-value">${d.medications}</span></div>
+        <div class="bsc-actions">
+          <button class="bsc-btn-confirm" onclick="sendMessage('confirm booking')">Confirm</button>
+          <button class="bsc-btn-edit"    onclick="sendMessage('edit booking')">Edit</button>
+          <button class="bsc-btn-cancel"  onclick="sendMessage('cancel booking')">Cancel</button>
+        </div>
+      </div>
+    `;
+    document.querySelector('#chat-messages').appendChild(card);
+    scrollToBottom();
+  }, 900);
+}
+
+// Posts the completed booking to Flask and shows the confirmation
+function writeBooking() {
+  const b = chatState.bookingData;
+  const doc = chatState.selectedDoctor;
+
+  showTypingIndicator();
+
+  fetch('http://127.0.0.1:5000/api/bookings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      doctor_id:         doc.id,
+      patient_name:      b.patient_name,
+      patient_dob:       b.patient_dob,
+      patient_phone:     b.patient_phone,
+      patient_email:     b.patient_email,
+      emergency_contact: `${b.emergency_name}, ${b.emergency_relationship}, ${b.emergency_number}`,
+      prev_therapy:      b.prev_therapy,
+      prev_detail:       b.prev_detail || null,
+      presenting:        b.presenting,
+      medications:       b.medications,
+      appt_date:         b.appt_date,
+      appt_time:         b.appt_time
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    hideTypingIndicator();
+    if (data.error) {
+      appendBotMessage("Something went wrong saving your booking. Please try again.");
+      return;
+    }
+
+    const doctorName = `Dr ${doc.first_name} ${doc.last_name}`;
+    const card = document.createElement('div');
+    card.className = 'chat-message bot-message';
+    card.style.padding = '0';
+    card.style.background = 'none';
+    card.innerHTML = `
+      <div class="booking-confirm-card">
+        <div class="bcc-icon">✓</div>
+        <div class="bcc-title">You're all booked!</div>
+        <div class="bcc-ref">${data.reference}</div>
+        <div class="bcc-note">
+          Your session with <strong>${doctorName}</strong> is confirmed for
+          <strong>${formatCalDate(b.appt_date)} at ${b.appt_time}</strong>.<br><br>
+          Payment and medical aid are handled on arrival,
+          30–45 minutes before your first session. Please bring your ID and medical aid card.
+        </div>
+      </div>
+    `;
+    document.querySelector('#chat-messages').appendChild(card);
+    scrollToBottom();
+
+    setTimeout(() => {
+      appendBotMessage(
+        "Is there anything else I can help you with?<br><br>" +
+        "<button class='menu-option' onclick='sendMessage(\"book another session\")'>📅 Book another session</button>" +
+        "<button class='menu-option' onclick='sendMessage(\"nav: main menu\")'>🏠 Back to main menu</button>"
+      );
+      chatState.phase = 'booking_complete';
+    }, 800);
+  })
+  .catch(() => {
+    hideTypingIndicator();
+    appendBotMessage("I couldn't reach the server. Please check your connection and try again.");
+  });
+}//-----BOOKING SUMMARY-------------------
+
+
+
+
+
 
 
 
@@ -808,9 +923,11 @@ function handlePhase(text) {
     case 'booking_summary':
       handleBookingSummaryInput(text);
       break;
-     case 'booking_calendar':
+    case 'booking_calendar':
       break;
-    
+    case 'booking_complete':
+      handleMenuInput(text);
+      break;
     default:
       break;
   }
