@@ -1195,6 +1195,186 @@ footer {
   color: var(--white);
 }
 
+/* -----------------------------------Calender widget Styling-----------------------------*/
+.cal-widget {
+  border: 1px solid var(--green);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 6px;
+  background: var(--white);
+  font-family: var(--font-body);
+}
+
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--green);
+  color: var(--white);
+}
+
+.cal-header span {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.cal-nav-btn {
+  background: none;
+  border: none;
+  color: var(--white);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 2px 8px;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.cal-nav-btn:hover {
+  background: var(--green-deep);
+}
+
+.cal-day-labels {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  padding: 8px 10px 0;
+}
+
+.cal-day-label {
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--ink);
+  opacity: 0.5;
+  font-weight: 500;
+  padding-bottom: 4px;
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+  padding: 4px 10px 10px;
+}
+
+.cal-day-btn {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  border: none;
+  background: none;
+  font-family: var(--font-body);
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.cal-day-btn:hover:not(:disabled) {
+  background: var(--cream);
+}
+
+.cal-day-btn.selected {
+  background: var(--green);
+  color: var(--white);
+  font-weight: 600;
+}
+
+.cal-day-btn.today {
+  border: 1.5px solid var(--green);
+}
+
+.cal-day-btn:disabled {
+  color: var(--ink);
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+.cal-day-btn.empty {
+  cursor: default;
+  pointer-events: none;
+}
+
+/* ── Time slot section ── */
+.cal-time-section {
+  border-top: 1px solid var(--cream);
+  padding: 10px 14px 12px;
+}
+
+.cal-time-label {
+  font-size: 0.78rem;
+  color: var(--ink);
+  opacity: 0.7;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.cal-time-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+.cal-time-btn {
+  background: none;
+  border: 1px solid var(--green);
+  border-radius: 6px;
+  padding: 6px 4px;
+  font-size: 0.75rem;
+  font-family: var(--font-body);
+  color: var(--green-deep);
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.15s;
+}
+
+.cal-time-btn:hover:not(:disabled) {
+  background: var(--green);
+  color: var(--white);
+}
+
+.cal-time-btn.selected {
+  background: var(--green);
+  color: var(--white);
+  font-weight: 600;
+}
+
+.cal-time-btn:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+/* ── Calendar confirm button ── */
+.cal-confirm-btn {
+  display: block;
+  width: calc(100% - 28px);
+  margin: 10px 14px 14px;
+  background: var(--green);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  padding: 10px;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.cal-confirm-btn:hover:not(:disabled) {
+  background: var(--green-deep);
+}
+
+.cal-confirm-btn:disabled {
+  background: var(--ink);
+  opacity: 0.2;
+  cursor: not-allowed;
+}
+
 /*--------------------CHATBOT STYLING SECTION-------------------------*/
 
 
