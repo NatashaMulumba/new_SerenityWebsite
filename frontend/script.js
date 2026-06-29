@@ -948,6 +948,8 @@ function handlePhase(text) {
     case 'booking_complete':
       handleMenuInput(text);
       break;
+    case 'booking_presenting':
+      break;
     default:
       break;
   }
