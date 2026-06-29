@@ -1120,6 +1120,9 @@ function handlePhase(text) {
       break;
     case 'booking_presenting':
       break;
+    case 'booking_cancel_confirm':
+      handleCancelConfirm(text);
+      break;
     default:
       break;
   }
