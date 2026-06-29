@@ -189,6 +189,7 @@ def send_confirmation_email(to_email, data, reference):
         </div>
         """
         mail.send(msg)
+        print(f"Email sent successfully to {to_email}")
         return True
     except Exception as e:
         print(f"Email error: {e}")
@@ -240,10 +241,31 @@ def create_booking():
         ))
 
         conn.commit()
-        cursor.close()
+
+        # Fetch doctor name for the email
+        cursor2 = conn.cursor(dictionary=True)
+        cursor2.execute("SELECT first_name, last_name FROM doctors WHERE id = %s", (data['doctor_id'],))
+        doctor = cursor2.fetchone()
+        cursor2.close()
         conn.close()
 
+        doctor_name = f"Dr {doctor['first_name']} {doctor['last_name']}" if doctor else "your therapist"
+
+        # Send confirmation email
+        send_confirmation_email(
+            to_email=data['patient_email'],
+            data={
+                'patient_name': data['patient_name'],
+                'doctor_name':  doctor_name,
+                'appt_date':    data['appt_date'],
+                'appt_time':    data['appt_time']
+            },
+            reference=ref
+        )
+
         return jsonify({'success': True, 'reference': ref})
+
+       
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
