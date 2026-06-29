@@ -15,6 +15,8 @@ const chatState = {
     priorWorked: null,
   },
   selectedDoctor: null,
+  bookingData: {},
+  bookingStep: 0,
   messages: [],
   crisisDetected: false,
   faqContext: {
@@ -258,7 +260,7 @@ function handleBrowsingCardInput(text) {
     showTypingIndicator();
     setTimeout(() => {
       hideTypingIndicator();
-      appendBotMessage("Great choice! The booking flow is coming in the next step.");
+      startBooking();
     }, 800);
 
   } else if (lower.includes('back to team')) {
@@ -268,6 +270,254 @@ function handleBrowsingCardInput(text) {
     resetToWelcome();
   }
 }
+
+// Validates a single booking field — returns an error string or null if valid
+function validateBookingInput(step, value) {
+  const v = value.trim();
+
+  if (step === 0) {
+    // Full name — at least two words, letters and spaces only
+    if (!/^[a-zA-Z\s'-]{2,}$/.test(v) || v.split(' ').filter(w => w).length < 2)
+      return "Please enter your full name (first and last name).";
+  }
+
+  if (step === 1) {
+    // Date of birth — accepts DD/MM/YYYY or DD-MM-YYYY
+    const parts = v.split(/[\/\-]/);
+    if (parts.length !== 3) return "Please use the format DD/MM/YYYY — for example 15/03/1990.";
+    const day = parseInt(parts[0]), month = parseInt(parts[1]), year = parseInt(parts[2]);
+    const date = new Date(year, month - 1, day);
+    if (isNaN(date.getTime()) || date.getDate() !== day || date.getMonth() !== month - 1)
+      return "That doesn't look like a valid date. Please use DD/MM/YYYY.";
+    const age = Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
+    if (age < 5 || age > 120)
+      return "Please check your date of birth — the age doesn't seem right.";
+  }
+
+  if (step === 2) {
+    // SA phone number — 10 digits starting with 0, or +27 followed by 9 digits
+    const digits = v.replace(/[\s\-]/g, '');
+    if (!/^(0\d{9}|\+27\d{9})$/.test(digits))
+      return "Please enter a valid South African number — e.g. 0821234567 or +27821234567.";
+  }
+
+  if (step === 3) {
+    // Email — standard format check
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v))
+      return "That doesn't look like a valid email address. Please try again.";
+  }
+
+  if (step === 4) {
+    // Emergency contact name — at least two words
+    if (v.split(' ').filter(w => w).length < 2)
+      return "Please enter their full name (first and last name).";
+  }
+
+  if (step === 5) {
+    // Emergency relationship — non-empty
+    if (v.length < 2)
+      return "Please tell us their relationship to you — for example: mother, friend, partner.";
+  }
+
+  if (step === 6) {
+    // Emergency contact number — SA phone
+    const digits = v.replace(/[\s\-]/g, '');
+    if (!/^(0\d{9}|\+27\d{9})$/.test(digits))
+      return "Please enter a valid South African number — e.g. 0821234567 or +27821234567.";
+  }
+
+  if (step === 9) {
+    // Presenting concern — at least 10 characters
+    if (v.length < 10)
+      return "Please share a little more — this helps your therapist prepare for your session.";
+  }
+
+  if (step === 10) {
+    // Medications — non-empty
+    if (v.length < 2)
+      return "Please enter your current medications, or say 'none' if you're not taking any.";
+  }
+
+  return null; // valid
+}
+
+// Initialises the booking flow for the selected doctor
+function startBooking() {
+  chatState.bookingData = {};
+  chatState.bookingStep = 0;
+  const name = `Dr ${chatState.selectedDoctor.first_name} ${chatState.selectedDoctor.last_name}`;
+  showTypingIndicator();
+  setTimeout(() => {
+    hideTypingIndicator();
+    appendBotMessage(
+      `Great — let's get your appointment with <strong>${name}</strong> booked. ` +
+      `I just need a few details. This takes about 2 minutes.`
+    );
+    setTimeout(() => askBookingQuestion(), 800);
+  }, 800);
+}
+
+// Asks the correct question based on the current bookingStep
+function askBookingQuestion() {
+  const b    = chatState.bookingData;
+  const step = chatState.bookingStep;
+  const isEditing = Object.keys(b).length > 0;
+
+  function hint(val) {
+    return isEditing && val
+      ? ` <span style="opacity:0.6;font-size:0.8rem;">(currently: ${val} — type to change or say <em>next</em>)</span>`
+      : '';
+  }
+
+  showTypingIndicator();
+  setTimeout(() => {
+    hideTypingIndicator();
+    chatState.phase = 'booking_intake';
+
+    if (step === 0) {
+      appendBotMessage(`What's your full name?${hint(b.patient_name)}`);
+
+    } else if (step === 1) {
+      appendBotMessage(`What's your date of birth? Use DD/MM/YYYY — for example 15/03/1990.${hint(b.patient_dob)}`);
+
+    } else if (step === 2) {
+      appendBotMessage(`What's your phone number?${hint(b.patient_phone)}`);
+
+    } else if (step === 3) {
+      appendBotMessage(`And your email address?${hint(b.patient_email)}`);
+
+    } else if (step === 4) {
+      appendBotMessage(`Who should we contact in an emergency? What's their full name?${hint(b.emergency_name)}`);
+
+    } else if (step === 5) {
+      appendBotMessage(`What's their relationship to you? For example: mother, friend, partner.${hint(b.emergency_relationship)}`);
+
+    } else if (step === 6) {
+      appendBotMessage(`And their phone number?${hint(b.emergency_number)}`);
+
+    } else if (step === 7) {
+      chatState.phase = 'booking_prev_therapy';
+      const yesClass = b.prev_therapy === 'Yes' ? ' seen' : '';
+      const noClass  = b.prev_therapy === 'No'  ? ' seen' : '';
+      appendBotMessage(
+        `Have you seen a therapist before?<br><br>` +
+        `<button class="menu-option${yesClass}" onclick="sendMessage('prev: Yes')">Yes</button>` +
+        `<button class="menu-option${noClass}"  onclick="sendMessage('prev: No')">No</button>`
+      );
+
+    } else if (step === 8) {
+      chatState.phase = 'booking_intake';
+      appendBotMessage(`Briefly — what worked, or what didn't?${hint(b.prev_detail)}`);
+
+    } else if (step === 9) {
+      const doctor = `Dr ${chatState.selectedDoctor.first_name} ${chatState.selectedDoctor.last_name}`;
+      appendBotMessage(
+        `What brings you to therapy? Take as much space as you need — ` +
+        `this goes directly to ${doctor}.${hint(b.presenting)}`
+      );
+
+    } else if (step === 10) {
+      appendBotMessage(`Are you currently taking any medications? If not, just say none.${hint(b.medications)}`);
+
+    } else if (step === 11) {
+      showCalendarPicker();
+    }
+
+  }, 700);
+}
+
+// Processes each intake answer, validates, and advances to the next step
+function handleBookingInput(text) {
+  const trimmed = text.trim();
+  const lower   = trimmed.toLowerCase();
+  const step    = chatState.bookingStep;
+  const b       = chatState.bookingData;
+  const isNext  = lower === 'next';
+
+  // Yes / No buttons for previous therapy
+  if (lower.startsWith('prev:')) {
+    const answer = trimmed.replace('prev:', '').trim();
+    b.prev_therapy = answer;
+    chatState.bookingStep++;
+    if (answer === 'No') {
+      b.prev_detail = null;
+      chatState.bookingStep++; // skip B5b
+    }
+    askBookingQuestion();
+    return;
+  }
+
+  // If editing and user says next, keep the existing value — skip validation
+  if (isNext && b[fieldKeyForStep(step)]) {
+    chatState.bookingStep++;
+    askBookingQuestion();
+    return;
+  }
+
+  // Validate before storing
+  const error = validateBookingInput(step, trimmed);
+  if (error) {
+    showTypingIndicator();
+    setTimeout(() => {
+      hideTypingIndicator();
+      appendBotMessage(` ${error}`);
+    }, 500);
+    return; // stay on same step
+  }
+
+  // Store the validated answer
+  if (step === 0)  b.patient_name          = trimmed;
+  if (step === 1)  b.patient_dob           = trimmed;
+  if (step === 2)  b.patient_phone         = trimmed;
+  if (step === 3)  b.patient_email         = trimmed;
+  if (step === 4)  b.emergency_name        = trimmed;
+  if (step === 5)  b.emergency_relationship = trimmed;
+  if (step === 6)  b.emergency_number      = trimmed;
+  if (step === 8)  b.prev_detail           = trimmed;
+  if (step === 9)  b.presenting            = trimmed;
+  if (step === 10) b.medications           = trimmed;
+
+  chatState.bookingStep++;
+  askBookingQuestion();
+}
+
+// Maps a step number to its bookingData key — used for edit/next detection
+function fieldKeyForStep(step) {
+  const map = {
+    0:  'patient_name',
+    1:  'patient_dob',
+    2:  'patient_phone',
+    3:  'patient_email',
+    4:  'emergency_name',
+    5:  'emergency_relationship',
+    6:  'emergency_number',
+    8:  'prev_detail',
+    9:  'presenting',
+    10: 'medications'
+  };
+  return map[step] || null;
+}
+
+// Handles confirm / edit / cancel from the booking summary
+function handleBookingSummaryInput(text) {
+  const lower = text.toLowerCase();
+
+  if (lower.includes('confirm')) {
+    writeBooking();
+  } else if (lower.includes('edit')) {
+    chatState.bookingStep = 0;
+    showTypingIndicator();
+    setTimeout(() => {
+      hideTypingIndicator();
+      appendBotMessage("No problem — let's go through your details. Say <em>next</em> to keep any answer as is.");
+      setTimeout(() => askBookingQuestion(), 600);
+    }, 700);
+  } else if (lower.includes('cancel')) {
+    resetToWelcome();
+  }
+}
+
+ 
 
 // Render the full detail card for the selected therapist
 function showTherapistCard(id) {
@@ -291,7 +541,7 @@ function showTherapistCard(id) {
         <p class="btc-bio">${t.bio}</p>
         <span class="btc-fee"> R${t.price} / session</span>
         <div class="btc-actions">
-          <button class="btc-btn-book" onclick="sendMessage('book: ${t.id}')">Book a session</button>
+          <button class="btc-btn-book" onclick="appendUserMessage('Book a session'); startBooking();">Book a session</button>
           <button class="btc-btn-back" onclick="sendMessage('nav: back to team')">Back to team</button>
         </div>
         <button class="btc-btn-menu" onclick="sendMessage('nav: main menu')">Back to main menu</button>
@@ -373,6 +623,16 @@ function handlePhase(text) {
     case 'browsing_card':
       handleBrowsingCardInput(text);
       break;
+    case 'booking_intake':
+      handleBookingInput(text);
+      break;
+    case 'booking_prev_therapy':
+      handleBookingInput(text);
+      break;
+    case 'booking_summary':
+      handleBookingSummaryInput(text);
+      break;
+    
     default:
       break;
   }
@@ -534,43 +794,6 @@ function handleTherapyGroupInput(text) {
 
 
 
-
-//function to show sub-menu for therapy style explanation [ non- group version]
-// function showTherapyStyles() {
-//   chatState.phase = 'therapy_style';
-//   showTypingIndicator();
-//   setTimeout(() => {
-//     hideTypingIndicator();
-//     appendBotMessage(
-//       "Here are the therapy approaches our therapists work with — tap any to learn more:<br><br>" +
-//       "<button class='menu-option' onclick='sendMessage(\"style: Mindfulness-Based\")'>🧘 Mindfulness-Based</button>" +
-//       "<button class='menu-option' onclick='sendMessage(\"style: CBT\")'>🧠 CBT</button>" +
-//       "<button class='menu-option' onclick='sendMessage(\"style: DBT\")'>⚖️ DBT</button>" +
-//       "<button class='menu-option' onclick='sendMessage(\"style: ACT\")'>🎯 ACT</button>" +
-//       "<button class='menu-option' onclick='sendMessage(\"style: Motivational Interviewing\")'>💬 Motivational Interviewing</button>" +
-//       "<button class='menu-option' onclick='sendMessage(\"style: Psychodynamic\")'>🔍 Psychodynamic</button>" +
-//       "<button class='menu-option' onclick='sendMessage(\"style: Person-Centred\")'>🤝 Person-Centred</button>" +
-//       "<button class='menu-option' onclick='sendMessage(\"style: Gottman Method\")'>💑 Gottman Method</button>" +
-//       "<button class='menu-option' onclick='sendMessage(\"style: Interpersonal\")'>🔗 Interpersonal (IPT)</button>" +
-//       "<button class='menu-option' onclick='sendMessage(\"style: Narrative\")'>📖 Narrative</button>" +
-//       "<button class='menu-option' onclick='sendMessage(\"style: Trauma-Focused\")'>🛡️ Trauma-Focused</button>" +
-//       "<button class='menu-option' onclick='sendMessage(\"style: Relational\")'>🌐 Relational</button>" +
-//       "<button class='menu-option' onclick='sendMessage(\"style: Play Therapy\")'>🎨 Play Therapy</button>" +
-//       "<button class='menu-option' onclick='sendMessage(\"style: AEDP\")'>✨ AEDP</button>" +
-//       "<button class='menu-option' onclick='sendMessage(\"style: Attachment-Based\")'>🔒 Attachment-Based</button>" +
-//       "<button class='menu-option' onclick='sendMessage(\"style: Coaching\")'>🚀 Coaching</button>" +
-//       "<button class='menu-option' onclick='sendMessage(\"style: Positive Psychology\")'>🌟 Positive Psychology</button>" +
-//       "<button class='menu-option' onclick='sendMessage(\"style: Integrative\")'>🔀 Integrative</button>" +
-//       "<button class='menu-option' onclick='sendMessage(\"style: Strength-Based\")'>💪 Strength-Based</button>" +
-//       "<button class='menu-option' onclick='sendMessage(\"style: Neuropsychology\")'>🧬 Neuropsychology</button>" +
-//       "<button class='menu-option' onclick='sendMessage(\"style: Compassion-Focused\")'>💛 Compassion-Focused (CFT)</button>" +
-//       "<button class='menu-option' onclick='sendMessage(\"style: Jungian\")'>🌙 Jungian</button>" +
-//       "<button class='menu-option' onclick='sendMessage(\"style: Psychoanalytic\")'>🛋️ Psychoanalytic</button>" +
-//       "<button class='menu-option' onclick='sendMessage(\"style: Family Marital\")'>👨‍👩‍👧 Family / Marital</button>" +
-//       "<button class='menu-option' onclick='sendMessage(\"style: Positive Psychology\")'>🌱 Positive Psychology</button>"
-//     );
-//   }, 1000);
-// }
 
 // updated therapyStyle function to include the group updated
 // List of therapy groups and the therapy approaches that belong to those groups
