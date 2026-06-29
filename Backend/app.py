@@ -55,6 +55,105 @@ def get_therapists():
     except Exception as e:
         return jsonify({'error': str(e)}),500 # error handling
     
+#  get available days and times for each doctor
+@app.route('/api/availability', methods=['GET'])
+def get_availability():
+    try:
+        doctor_id = request.args.get('doctor_id') #read doctor id from URL
+        if not doctor_id:
+            return jsonify({'error': 'doctor_id required'}), 400
+
+        conn = mysql.connector.connect(
+            host=os.getenv('DB_HOST'),
+            user=os.getenv('DB_USER'),
+            password=os.getenv('DB_PASSWORD'),
+            database=os.getenv('DB_NAME'),
+            port=int(os.getenv('DB_PORT', 3306))
+        )
+        cursor = conn.cursor(dictionary=True)
+
+        # Get the days this doctor works
+        cursor.execute("""
+            SELECT day FROM availability
+            WHERE doctor_id = %s
+        """, (doctor_id,))
+        days = [row['day'] for row in cursor.fetchall()]  # turns list of row dictionaries to plain list
+
+        # Get already booked slots for this doctor
+        cursor.execute("""
+            SELECT appt_date, appt_time FROM appointments
+            WHERE doctor_id = %s
+        """, (doctor_id,))
+        booked = [
+            {'date': str(row['appt_date']), 'time': row['appt_time']}
+            for row in cursor.fetchall()
+        ]
+
+        cursor.close()
+        conn.close()
+
+        return jsonify({
+            'working_days': days,
+            'booked_slots': booked
+        })
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+# Write a new appointment booking to the database
+@app.route('/api/bookings', methods=['POST'])
+def create_booking():
+    try:
+        data = request.get_json()
+
+        # Generate a unique reference number
+        import random, string
+        ref = 'SWC-' + ''.join(random.choices(string.ascii_uppercase + string.digits, k=5))
+
+        conn = mysql.connector.connect(
+            host=os.getenv('DB_HOST'),
+            user=os.getenv('DB_USER'),
+            password=os.getenv('DB_PASSWORD'),
+            database=os.getenv('DB_NAME'),
+            port=int(os.getenv('DB_PORT', 3306))
+        )
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            INSERT INTO appointments (
+                doctor_id, patient_name, patient_dob,
+                patient_phone, patient_email, emergency_contact,
+                prev_therapy, prev_detail, presenting,
+                medications, appt_date, appt_time, reference
+            ) VALUES (
+                %s, %s, %s, %s, %s, %s,
+                %s, %s, %s, %s, %s, %s, %s
+            )
+        """, (
+            data['doctor_id'],
+            data['patient_name'],
+            data['patient_dob'],
+            data['patient_phone'],
+            data['patient_email'],
+            data['emergency_contact'],
+            data['prev_therapy'],
+            data.get('prev_detail', None),
+            data['presenting'],
+            data['medications'],
+            data['appt_date'],
+            data['appt_time'],
+            ref
+        ))
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        return jsonify({'success': True, 'reference': ref})
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
 if __name__ == '__main__':
     app.run(debug=True)
 
