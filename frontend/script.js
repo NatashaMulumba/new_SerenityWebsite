@@ -208,6 +208,101 @@ function resetToWelcome() {
   showMenuOptions();
 }
 
+// Fetch therapists from Flask and render the two-column list
+function handleBrowseTeam() {
+  showTypingIndicator();
+
+  fetch('http://127.0.0.1:5000/api/therapists')
+    .then(response => response.json())
+    .then(therapists => {
+      hideTypingIndicator();
+
+      chatState.browseList = therapists;
+
+      const buttons = therapists.map(t =>
+        `<button class="therapist-option" onclick="showTherapistCard(${t.id})">
+          <span class="t-name">Dr ${t.first_name} ${t.last_name}</span>
+          <span class="t-spec">${t.title}</span>
+        </button>`
+      ).join('');
+
+      appendBotMessage(
+        `Here's our team — tap anyone to see their full profile:<br><br>` +
+        `<div class="therapist-grid">${buttons}</div>`
+      );
+
+      chatState.phase = 'browsing';
+    })
+    .catch(() => {
+      hideTypingIndicator();
+      appendBotMessage("I couldn't load the team right now. Please try again in a moment.");
+    });
+}
+
+
+// Handles text input while the therapist list is visible
+function handleBrowsingInput(text) {
+  const lower = text.toLowerCase();
+  if (lower.includes('main menu')) {
+    resetToWelcome();
+  } else {
+    appendBotMessage("Tap a therapist above to see their profile, or go back to the main menu.");
+  }
+}
+
+// Handles button clicks from inside the therapist card
+function handleBrowsingCardInput(text) {
+  const lower = text.toLowerCase();
+
+  if (lower.startsWith('book:')) {
+    showTypingIndicator();
+    setTimeout(() => {
+      hideTypingIndicator();
+      appendBotMessage("Great choice! The booking flow is coming in the next step.");
+    }, 800);
+
+  } else if (lower.includes('back to team')) {
+    handleBrowseTeam();
+
+  } else if (lower.includes('main menu')) {
+    resetToWelcome();
+  }
+}
+
+// Render the full detail card for the selected therapist
+function showTherapistCard(id) {
+  const t = chatState.browseList.find(d => d.id === id);
+  if (!t) return;
+
+  chatState.selectedDoctor = t;
+
+  const initials = t.first_name.charAt(0) + t.last_name.charAt(0);
+
+  appendBotMessage(
+    `<div class="bot-therapist-card">
+      <div class="btc-header">
+        <div class="btc-avatar">${initials}</div>
+        <div>
+          <span class="btc-name">Dr ${t.first_name} ${t.last_name}</span>
+          <span class="btc-title">${t.title} · ${t.specialisation}</span>
+        </div>
+      </div>
+      <div class="btc-body">
+        <p class="btc-bio">${t.bio}</p>
+        <span class="btc-fee"> R${t.price} / session</span>
+        <div class="btc-actions">
+          <button class="btc-btn-book" onclick="sendMessage('book: ${t.id}')">Book a session</button>
+          <button class="btc-btn-back" onclick="sendMessage('nav: back to team')">Back to team</button>
+        </div>
+        <button class="btc-btn-menu" onclick="sendMessage('nav: main menu')">Back to main menu</button>
+      </div>
+    </div>`
+  );
+
+  chatState.phase = 'browsing_card';
+}
+
+
 
 // Function to display Crisis Line when Flagged words detected
 function handleCrisis() {
@@ -272,6 +367,12 @@ function handlePhase(text) {
     case 'therapy_groups':
       handleTherapyGroupInput(text);
       break;
+    case 'browsing':
+      handleBrowsingInput(text);
+      break;
+    case 'browsing_card':
+      handleBrowsingCardInput(text);
+      break;
     default:
       break;
   }
@@ -311,7 +412,7 @@ function handleMenuInput(text) {
     chatState.phase = 'intake_q1';
     // handleQ1() will go here next session
   } else if (lower.includes('browse the team') || lower.includes('👤')) {
-    chatState.phase = 'browsing';
+     handleBrowseTeam();
     // handleBrowse() will go here next session
   } else if (lower.includes('faq') || lower.includes('📋')) {
     handleFAQ();
