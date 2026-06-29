@@ -116,6 +116,84 @@ def get_availability():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
+
+# Send booking confirmation email to the patient
+def send_confirmation_email(to_email, data, reference):
+    try:
+        msg = Message(
+            subject="Your Serenity Wellness Centre Booking Confirmation",
+            recipients=[to_email]
+        )
+        msg.html = f"""
+        <div style="font-family: Inter, sans-serif; max-width: 600px; margin: 0 auto; color: #2b2a26;">
+
+            <div style="background: #5f7766; padding: 24px 32px;">
+                <h1 style="color: white; font-family: Georgia, serif; margin: 0; font-size: 1.4rem;">
+                    Serenity Wellness Centre
+                </h1>
+                <p style="color: rgba(255,255,255,0.85); margin: 4px 0 0; font-size: 0.9rem;">
+                    Booking Confirmation
+                </p>
+            </div>
+
+            <div style="padding: 32px;">
+                <p style="font-size: 1rem; margin-bottom: 8px;">
+                    Dear <strong>{data['patient_name']}</strong>,
+                </p>
+                <p style="color: #5f7766; font-size: 0.9rem; margin-bottom: 24px;">
+                    Your session has been confirmed. Here are your booking details:
+                </p>
+
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.88rem; margin-bottom: 24px;">
+                    <tr style="border-bottom: 1px solid #f7f4ee;">
+                        <td style="padding: 10px 0; color: #888; width: 140px;">Reference</td>
+                        <td style="padding: 10px 0; font-weight: 600; color: #5f7766;">{reference}</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #f7f4ee;">
+                        <td style="padding: 10px 0; color: #888;">Therapist</td>
+                        <td style="padding: 10px 0;">{data['doctor_name']}</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #f7f4ee;">
+                        <td style="padding: 10px 0; color: #888;">Date</td>
+                        <td style="padding: 10px 0;">{data['appt_date']}</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #f7f4ee;">
+                        <td style="padding: 10px 0; color: #888;">Time</td>
+                        <td style="padding: 10px 0;">{data['appt_time']}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px 0; color: #888;">Session type</td>
+                        <td style="padding: 10px 0;">In-person / Online</td>
+                    </tr>
+                </table>
+
+                <div style="background: #f7f4ee; border-radius: 8px; padding: 16px; margin-bottom: 24px; font-size: 0.85rem;">
+                    <strong>Before your first session:</strong><br><br>
+                    Please arrive <strong>30–45 minutes early</strong> to complete your intake forms 
+                    and arrange payment and medical aid. Bring your <strong>ID</strong> and 
+                    <strong>medical aid card</strong> if applicable.
+                </div>
+
+                <p style="font-size: 0.85rem; color: #888; margin-bottom: 4px;">
+                    Need to cancel or reschedule? Please give us at least <strong style="color: #5f7766;">24 hours' notice</strong>.
+                </p>
+                <p style="font-size: 0.85rem; color: #888;">
+                    Call our receptionist Cleo on <strong style="color: #2b2a26;">015 783 2323</strong> or reply to this email to make any changes.
+                </p>
+            </div>
+
+            <div style="background: #f7f4ee; padding: 16px 32px; font-size: 0.78rem; color: #888; text-align: center;">
+                &copy; 2026 Serenity Wellness Centre &middot; All rights reserved
+            </div>
+
+        </div>
+        """
+        mail.send(msg)
+        return True
+    except Exception as e:
+        print(f"Email error: {e}")
+        return False
+    
 # Write a new appointment booking to the database
 @app.route('/api/bookings', methods=['POST'])
 def create_booking():
