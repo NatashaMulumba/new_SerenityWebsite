@@ -518,13 +518,14 @@ function fieldKeyForStep(step) {
   return map[step] || null;
 }
 
-// Handles confirm / edit / cancel from the booking summary
+
+// Handles confirm / edit / cancelfrom the booking summary/ update: give warning before canceling.
 function handleBookingSummaryInput(text) {
   const lower = text.toLowerCase();
 
-  if (lower.includes('confirm')) {
+  if (lower.includes('confirm booking')) {
     writeBooking();
-  } else if (lower.includes('edit')) {
+  } else if (lower.includes('edit booking')) {
     chatState.bookingStep = 0;
     showTypingIndicator();
     setTimeout(() => {
@@ -532,8 +533,17 @@ function handleBookingSummaryInput(text) {
       appendBotMessage("No problem — let's go through your details. Say <em>next</em> to keep any answer as is.");
       setTimeout(() => askBookingQuestion(), 600);
     }, 700);
-  } else if (lower.includes('cancel')) {
-    resetToWelcome();
+  } else if (lower.includes('cancel booking')) {
+    chatState.phase = 'booking_cancel_confirm';
+    showTypingIndicator();
+    setTimeout(() => {
+      hideTypingIndicator();
+      appendBotMessage(
+        "Are you sure you want to cancel? Your details will be lost.<br><br>" +
+        "<button class='menu-option' onclick='sendMessage(\"cancel yes\")'>Yes, cancel my booking</button>" +
+        "<button class='menu-option' onclick='sendMessage(\"cancel no\")'>No, go back to summary</button>"
+      );
+    }, 600);
   }
 }
 
