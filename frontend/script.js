@@ -410,11 +410,31 @@ function askBookingQuestion() {
       appendBotMessage(`Briefly — what worked, or what didn't?${hint(b.prev_detail)}`);
 
     } else if (step === 9) {
+      chatState.phase = 'booking_presenting';
       const doctor = `Dr ${chatState.selectedDoctor.first_name} ${chatState.selectedDoctor.last_name}`;
-      appendBotMessage(
-        `What brings you to therapy? Take as much space as you need — ` +
-        `this goes directly to ${doctor}.${hint(b.presenting)}`
-      );
+      appendBotMessage(`What brings you to therapy? This goes directly to ${doctor}.${hint(b.presenting)}`);
+      const wrapper = document.createElement('div');
+      wrapper.className = 'chat-message bot-message';
+      wrapper.style.padding = '0';
+      wrapper.style.background = 'none';
+      wrapper.innerHTML = `
+        <div class="presenting-widget">
+          <textarea
+            id="presenting-input"
+            class="presenting-textarea"
+            maxlength="500"
+            placeholder="Share what's brought you here — in your own words..."
+            oninput="presentingCount(this)"
+          ></textarea>
+          <div class="presenting-footer">
+            <span class="presenting-counter" id="presenting-counter">500 characters remaining</span>
+            <button class="presenting-submit" onclick="presentingSubmit()">Continue →</button>
+          </div>
+        </div>
+      `;
+      document.querySelector('#chat-messages').appendChild(wrapper);
+      scrollToBottom();
+      setTimeout(() => document.getElementById('presenting-input')?.focus(), 100);
 
     } else if (step === 10) {
       appendBotMessage(`Are you currently taking any medications? If not, just say none.${hint(b.medications)}`);
