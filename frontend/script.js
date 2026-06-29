@@ -517,6 +517,182 @@ function handleBookingSummaryInput(text) {
   }
 }
 
+
+// --------------------CALENDER WIDGET FUNCTIONS ----------------------------------------------
+// Fetches availability and renders the calendar widget
+function showCalendarPicker() {
+  const doctorId = chatState.selectedDoctor.id;
+  chatState.phase = 'booking_calendar';
+
+  showTypingIndicator();
+  fetch(`http://127.0.0.1:5000/api/availability?doctor_id=${doctorId}`)
+    .then(res => res.json())
+    .then(data => {
+      hideTypingIndicator();
+      chatState.calAvailability = data; // { working_days: [], booked_slots: [] }
+      chatState.calSelectedDate = null;
+      chatState.calSelectedTime = null;
+
+      appendBotMessage("Almost there — pick a date and time for your session:");
+      const widget = buildCalendarWidget();
+      const wrapper = document.createElement('div');
+      wrapper.className = 'chat-message bot-message';
+      wrapper.style.padding = '0';
+      wrapper.style.background = 'none';
+      wrapper.appendChild(widget);
+      document.querySelector('#chat-messages').appendChild(wrapper);
+      scrollToBottom();
+    })
+    .catch(() => {
+      hideTypingIndicator();
+      appendBotMessage("I couldn't load the calendar right now. Please try again in a moment.");
+    });
+}
+
+// Builds the calendar DOM element
+function buildCalendarWidget() {
+  // Fixed 50-min slots with lunch break 13:00-13:50
+  const ALL_SLOTS = [
+    '08:00','08:50','09:40','10:30','11:20','12:10',
+    '14:00','14:50','15:40','16:30'
+  ];
+
+  const today = new Date();
+  let viewYear  = today.getFullYear();
+  let viewMonth = today.getMonth();
+
+  const widget = document.createElement('div');
+  widget.className = 'cal-widget';
+  widget.id = 'cal-widget';
+
+  function render() {
+    const workingDays  = chatState.calAvailability.working_days;  // e.g. ['Monday','Wednesday']
+    const bookedSlots  = chatState.calAvailability.booked_slots;  // e.g. [{date:'2026-07-07',time:'09:40'}]
+    const selDate      = chatState.calSelectedDate;
+    const selTime      = chatState.calSelectedTime;
+
+    const monthNames = ['January','February','March','April','May','June',
+                        'July','August','September','October','November','December'];
+    const dayNames   = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+
+    const firstDay     = new Date(viewYear, viewMonth, 1).getDay();
+    const daysInMonth  = new Date(viewYear, viewMonth + 1, 0).getDate();
+
+    // Cut-off: today is the earliest bookable date
+    const todayStr = today.toISOString().split('T')[0];
+
+    // 8-week limit from today
+    const maxDate = new Date(today);
+    maxDate.setDate(maxDate.getDate() + 56);
+
+    let html = `
+      <div class="cal-header">
+        <button class="cal-nav-btn" onclick="calNavigate(-1)">&#8249;</button>
+        <span>${monthNames[viewMonth]} ${viewYear}</span>
+        <button class="cal-nav-btn" onclick="calNavigate(1)">&#8250;</button>
+      </div>
+      <div class="cal-day-labels">
+        ${dayNames.map(d => `<div class="cal-day-label">${d}</div>`).join('')}
+      </div>
+      <div class="cal-grid">
+        ${Array(firstDay).fill('<div class="cal-day-btn empty"></div>').join('')}
+    `;
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateObj  = new Date(viewYear, viewMonth, d);
+      const dateStr  = `${viewYear}-${String(viewMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const dayName  = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][dateObj.getDay()];
+      const isPast   = dateStr < todayStr;
+      const isFuture = dateObj > maxDate;
+      const isWorking = workingDays.includes(dayName);
+      const disabled  = isPast || isFuture || !isWorking;
+      const isSelected = dateStr === selDate;
+      const isToday    = dateStr === todayStr;
+
+      let cls = 'cal-day-btn';
+      if (isSelected) cls += ' selected';
+      if (isToday && !isSelected) cls += ' today';
+
+      html += `<button class="${cls}" ${disabled ? 'disabled' : ''} onclick="calSelectDate('${dateStr}')">${d}</button>`;
+    }
+
+    html += `</div>`;
+
+    // Time slots — shown only after a date is selected
+    if (selDate) {
+      const bookedTimesForDate = bookedSlots
+        .filter(s => s.date === selDate)
+        .map(s => s.time);
+
+      html += `
+        <div class="cal-time-section">
+          <div class="cal-time-label">Available times for ${formatCalDate(selDate)}</div>
+          <div class="cal-time-grid">
+            ${ALL_SLOTS.map(slot => {
+              const isBooked   = bookedTimesForDate.includes(slot);
+              const isSelected = slot === selTime;
+              let cls = 'cal-time-btn';
+              if (isSelected) cls += ' selected';
+              return `<button class="${cls}" ${isBooked ? 'disabled' : ''} onclick="calSelectTime('${slot}')">${slot}</button>`;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    const btnLabel = selDate && selTime
+      ? `Confirm — ${formatCalDate(selDate)} at ${selTime}`
+      : 'Select a date and time';
+
+    html += `<button class="cal-confirm-btn" ${!(selDate && selTime) ? 'disabled' : ''} onclick="calConfirm()">${btnLabel}</button>`;
+
+    widget.innerHTML = html;
+  }
+
+  // Expose navigation to global scope so onclick can reach it
+  window.calNavigate = function(dir) {
+    viewMonth += dir;
+    if (viewMonth < 0)  { viewMonth = 11; viewYear--; }
+    if (viewMonth > 11) { viewMonth = 0;  viewYear++; }
+    render();
+  };
+
+  window.calSelectDate = function(dateStr) {
+    chatState.calSelectedDate = dateStr;
+    chatState.calSelectedTime = null;
+    render();
+    scrollToBottom();
+  };
+
+  window.calSelectTime = function(time) {
+    chatState.calSelectedTime = time;
+    render();
+  };
+
+  window.calConfirm = function() {
+    const b = chatState.bookingData;
+    b.appt_date = chatState.calSelectedDate;
+    b.appt_time = chatState.calSelectedTime;
+    chatState.bookingStep++;
+    showBookingSummary();
+  };
+
+  render();
+  return widget;
+}
+
+// Formats a YYYY-MM-DD date string to a readable label
+function formatCalDate(str) {
+  const d = new Date(str + 'T12:00:00');
+  return d.toLocaleDateString('en-ZA', { weekday: 'short', day: 'numeric', month: 'long' });
+}
+
+// --------------------CALENDER WIDGET FUNCTIONS ----------------------------------------------
+
+
+
+
+
  
 
 // Render the full detail card for the selected therapist
@@ -631,6 +807,8 @@ function handlePhase(text) {
       break;
     case 'booking_summary':
       handleBookingSummaryInput(text);
+      break;
+     case 'booking_calendar':
       break;
     
     default:
