@@ -547,6 +547,27 @@ function handleBookingSummaryInput(text) {
   }
 }
 
+// Handles the cancel confirmation step
+function handleCancelConfirm(text) {
+  const lower = text.toLowerCase();
+
+  if (lower.includes('cancel yes')) {
+    showTypingIndicator();
+    setTimeout(() => {
+      hideTypingIndicator();
+      appendBotMessage("Your booking has been cancelled. We hope to see you again soon.");
+      setTimeout(() => resetToWelcome(), 2500);
+    }, 600);
+  } else if (lower.includes('cancel no')) {
+    showTypingIndicator();
+    setTimeout(() => {
+      hideTypingIndicator();
+      appendBotMessage("Good — let's pick up where you left off.");
+      setTimeout(() => showBookingSummary(), 600);
+    }, 600);
+  }
+}
+
 
 // --------------------CALENDER WIDGET FUNCTIONS ----------------------------------------------
 // Fetches availability and renders the calendar widget
