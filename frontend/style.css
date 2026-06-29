@@ -1502,6 +1502,72 @@ footer {
   opacity: 0.85;
 }
 
+/* ── Presenting concern widget ── */
+.presenting-widget {
+  border: 1px solid var(--green);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 6px;
+  background: var(--white);
+}
+
+.presenting-textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 12px 14px;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--ink);
+  border: none;
+  outline: none;
+  resize: none;
+  line-height: 1.6;
+  background: var(--white);
+}
+
+.presenting-textarea:focus {
+  border-color: var(--green);
+}
+
+.presenting-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  border-top: 1px solid var(--cream);
+}
+
+.presenting-counter {
+  font-size: 0.75rem;
+  color: var(--ink);
+  opacity: 0.5;
+}
+
+.presenting-submit {
+  background: var(--green);
+  color: var(--white);
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.presenting-submit:hover {
+  background: var(--green-deep);
+}
+
+/* presenting text preview in summary — truncate long entries */
+.presenting-preview {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.5;
+}
+
 /*--------------------CHATBOT STYLING SECTION-------------------------*/
 
 
