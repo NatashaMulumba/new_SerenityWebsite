@@ -772,6 +772,12 @@ footer {
   color: white;
 }
 
+.menu-option.seen {
+  opacity: 0.4;
+  pointer-events: none;
+  cursor: default;
+}
+
 #chat-window.open {
     display: flex;
 }
@@ -1021,12 +1027,175 @@ footer {
   40%           { transform: translateY(-6px); opacity: 1; }
 }
 
+
+/* ── Browse the team: two-column therapist grid ── */
+
+.btc-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btc-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.therapist-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.therapist-option {
+  background: none;
+  border: 1px solid var(--cream);
+  border-radius: 8px;
+  padding: 8px 10px;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.85rem;
+  color: var(--ink);
+  width: 100%;
+  line-height: 1.3;
+}
+
+.therapist-option:hover {
+  background-color: var(--green-deep);
+  color: white;
+}
+
+.therapist-option .t-name {
+  display: block;
+  font-weight: 500;
+}
+
+.therapist-option .t-spec {
+  display: block;
+  font-size: 0.75rem;
+  opacity: 0.75;
+  margin-top: 2px;
+}
+
+/* ── Therapist detail card ── */
+.bot-therapist-card {
+  border: 1px solid var(--green);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.bot-therapist-card .btc-header {
+  background-color: var(--green);
+  color: white;
+  padding: 12px 14px;
+}
+
+.bot-therapist-card .btc-name {
+  font-family: 'Fraunces', serif;
+  font-size: 1rem;
+  font-weight: 600;
+  display: block;
+}
+
+.bot-therapist-card .btc-title {
+  font-size: 0.8rem;
+  opacity: 0.85;
+  display: block;
+  margin-top: 2px;
+}
+
+.bot-therapist-card .btc-body {
+  padding: 12px 14px;
+}
+
+.bot-therapist-card .btc-bio {
+  font-size: 0.85rem;
+  color: var(--color-text);
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+.bot-therapist-card .btc-fee {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--gold);
+  border: 1px solid var(--gold);
+  border-radius: 20px;
+  padding: 3px 10px;
+  margin-bottom: 12px;
+}
+
+.btc-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.btc-btn-book {
+  flex: 1;
+  background: var(--green);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btc-btn-book:hover {
+  background: var(--green-deep);
+}
+
+.btc-btn-back {
+  background: var(--white);
+  color: var(--ink);
+  border: 1px solid var(--green);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.btc-btn-back:hover {
+  background: var(--green);
+  color: var(--white);
+}
+ /*back to menu styling */
+.btc-btn-menu {
+  background: var(--white);
+  color: var(--ink);
+  border: 1px solid var(--green);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  cursor: pointer;
+  margin-top: 8px;
+  width: 100%;
+}
+.btc-btn-menu:hover {
+  background: var(--green);
+  color: var(--white);
+}
+
 /*--------------------CHATBOT STYLING SECTION-------------------------*/
-
-
-
-
-
 
 
 /*-----------------RESPONSIVE DESIGN -------------------------*/
