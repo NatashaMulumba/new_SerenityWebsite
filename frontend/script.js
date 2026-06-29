@@ -578,8 +578,11 @@ function buildCalendarWidget() {
   ];
 
   const today = new Date();
-  let viewYear  = today.getFullYear();
-  let viewMonth = today.getMonth();
+  const preselected = chatState.calSelectedDate
+    ? new Date(chatState.calSelectedDate + 'T12:00:00')
+    : null;
+  let viewYear  = preselected ? preselected.getFullYear() : today.getFullYear();
+  let viewMonth = preselected ? preselected.getMonth()    : today.getMonth();
 
   const widget = document.createElement('div');
   widget.className = 'cal-widget';
