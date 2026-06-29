@@ -550,8 +550,8 @@ function showCalendarPicker() {
     .then(data => {
       hideTypingIndicator();
       chatState.calAvailability = data; // { working_days: [], booked_slots: [] }
-      chatState.calSelectedDate = null;
-      chatState.calSelectedTime = null;
+      chatState.calSelectedDate =  chatState.bookingData.appt_date || null; // store the Date incase user wants to edit
+      chatState.calSelectedTime = chatState.bookingData.appt_time || null; // store the time incase user wants to edit
 
       appendBotMessage("Almost there — pick a date and time for your session:");
       const widget = buildCalendarWidget();
