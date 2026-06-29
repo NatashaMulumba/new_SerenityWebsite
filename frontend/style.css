@@ -1375,6 +1375,133 @@ footer {
   cursor: not-allowed;
 }
 
+/* ── Booking summary card ── */
+.booking-summary-card {
+  border: 1px solid var(--green);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 6px;
+  font-family: var(--font-body);
+}
+
+.bsc-header {
+  background: var(--green);
+  color: var(--white);
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 10px 14px;
+}
+
+.bsc-row {
+  display: flex;
+  gap: 8px;
+  padding: 7px 14px;
+  border-bottom: 1px solid var(--cream);
+  font-size: 0.82rem;
+}
+
+.bsc-row:last-of-type {
+  border-bottom: none;
+}
+
+.bsc-label {
+  color: var(--ink);
+  opacity: 0.5;
+  min-width: 90px;
+  flex-shrink: 0;
+  font-weight: 500;
+}
+
+.bsc-value {
+  color: var(--ink);
+}
+
+.bsc-actions {
+  display: flex;
+  gap: 8px;
+  padding: 10px 14px 12px;
+}
+
+.bsc-btn-confirm {
+  flex: 1;
+  background: var(--green);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  padding: 9px;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.bsc-btn-confirm:hover { background: var(--green-deep); }
+
+.bsc-btn-edit,
+.bsc-btn-cancel {
+  background: var(--white);
+  color: var(--ink);
+  border: 1px solid var(--green);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.bsc-btn-edit:hover,
+.bsc-btn-cancel:hover {
+  background: var(--green);
+  color: var(--white);
+}
+
+/* ── Booking confirmation card ── */
+.booking-confirm-card {
+  border: 1px solid var(--green);
+  border-radius: 10px;
+  padding: 20px 16px;
+  margin-top: 6px;
+  text-align: center;
+  font-family: var(--font-body);
+}
+
+.bcc-icon {
+  width: 40px;
+  height: 40px;
+  background: var(--green);
+  color: var(--white);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 auto 10px;
+}
+
+.bcc-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+
+.bcc-ref {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--green);
+  letter-spacing: 0.06em;
+  margin-bottom: 10px;
+}
+
+.bcc-note {
+  font-size: 0.82rem;
+  color: var(--ink);
+  line-height: 1.6;
+  opacity: 0.85;
+}
+
 /*--------------------CHATBOT STYLING SECTION-------------------------*/
 
 
