@@ -831,7 +831,7 @@ function writeBooking() {
         <div class="bcc-note">
           Your session with <strong>${doctorName}</strong> is confirmed for
           <strong>${formatCalDate(b.appt_date)} at ${b.appt_time}</strong>.<br><br>
-          Payment and medical aid are handled on arrival,
+          A confirmation email has been sent to ${b.patient_email}. Payment and medical aid details will be handled on arrival.,
           30–45 minutes before your first session. Please bring your ID and medical aid card.
         </div>
       </div>
