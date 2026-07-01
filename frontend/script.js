@@ -477,6 +477,35 @@ function handleIntakeQ5(text) {
   askIntakeQ6();
 }
 
+//function to get the sixth intake question: Do you have any preferences for your therapist's
+function askIntakeQ6() {
+  chatState.phase = 'intake_q6';
+
+  showTypingIndicator();
+  setTimeout(() => {
+    hideTypingIndicator();
+    appendBotMessage(
+      "Do you have a preference for your therapist's gender?<br><br>" +
+      "<button class='menu-option' onclick='sendMessage(\"intake_q6: Female\")'>👩 Female</button>" +
+      "<button class='menu-option' onclick='sendMessage(\"intake_q6: Male\")'>👨 Male</button>" +
+      "<button class='menu-option' onclick='sendMessage(\"intake_q6: No preference\")'>🤷 No preference</button>"
+    );
+  }, 800);
+}
+
+function handleIntakeQ6(text) {
+  const answer = text.replace('intake_q6:', '').trim();
+  chatState.patientProfile.therapistPrefs.gender = answer === 'No preference' ? null : answer;
+  askIntakeQ7();
+}
+
+
+
+
+
+
+
+
 
 
 // ----------- BOOKING FLOW -----------------
@@ -1371,6 +1400,9 @@ function handlePhase(text) {
       break;
     case 'intake_q5':
       if (text.startsWith('intake_q5:')) handleIntakeQ5(text);
+      break;
+    case 'intake_q6':
+      if (text.startsWith('intake_q6:')) handleIntakeQ6(text);
       break;
     default:
       break;
