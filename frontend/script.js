@@ -498,6 +498,64 @@ function selectIntakeQ6(answer) {
 }
 
 
+//function to get the seventh intake question: Have you seen a therapist before?
+function askIntakeQ7() {
+  chatState.phase = 'intake_q7';
+
+  showTypingIndicator();
+  setTimeout(() => {
+    hideTypingIndicator();
+    appendBotMessage(
+      "Have you seen a therapist before?<br><br>" +
+      "<button class='menu-option' onclick='selectIntakeQ7(\"Yes\")'>Yes</button>" +
+      "<button class='menu-option' onclick='selectIntakeQ7(\"No\")'>No</button>"
+    );
+  }, 800);
+}
+
+function selectIntakeQ7(answer) {
+  chatState.patientProfile.priorTherapy = answer;
+  appendUserMessage(answer);
+
+  if (answer === 'Yes') {
+    askIntakeQ7b();
+  } else {
+    chatState.patientProfile.priorWorked = null;
+    runGeminiMatch();
+  }
+}
+
+function askIntakeQ7b() {
+  chatState.phase = 'intake_q7b';
+
+  showTypingIndicator();
+  setTimeout(() => {
+    hideTypingIndicator();
+    appendBotMessage(
+      "What worked for you, or what didn't? This helps us find an approach that fits.<br><br>" +
+      "<span style='opacity:0.6;font-size:0.85rem;'>Keep it brief, a sentence or two is fine.</span>"
+    );
+  }, 800);
+}
+
+function handleIntakeQ7b(text) {
+  const value = text.trim();
+
+  if (value.length < 5) {
+    showTypingIndicator();
+    setTimeout(() => {
+      hideTypingIndicator();
+      appendBotMessage("Please share just a little more so we can find the best approach for you.");
+    }, 500);
+    return;
+  }
+
+  chatState.patientProfile.priorWorked = value;
+  appendUserMessage(value.length > 60 ? value.substring(0, 60) + '...' : value);
+  runGeminiMatch();
+}
+
+
 
 
 
