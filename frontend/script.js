@@ -464,16 +464,16 @@ function askIntakeQ5() {
     hideTypingIndicator();
     appendBotMessage(
       "Would you prefer your sessions online or in-person?<br><br>" +
-      "<button class='menu-option' onclick='sendMessage(\"intake_q5: Online\")'>💻 Online</button>" +
-      "<button class='menu-option' onclick='sendMessage(\"intake_q5: In-person\")'>🏢 In-person</button>" +
-      "<button class='menu-option' onclick='sendMessage(\"intake_q5: No preference\")'>🤷 No preference</button>"
+      "<button class='menu-option' onclick='selectIntakeQ5(\"Online\")'>💻 Online</button>" +
+      "<button class='menu-option' onclick='selectIntakeQ5(\"In-person\")'>🏢 In-person</button>" +
+      "<button class='menu-option' onclick='selectIntakeQ5(\"No preference\")'>🤷 No preference</button>"
     );
   }, 800);
 }
 
-function handleIntakeQ5(text) {
-  const answer = text.replace('intake_q5:', '').trim();
+function selectIntakeQ5(answer) {
   chatState.patientProfile.sessionType = answer;
+  appendUserMessage(answer);
   askIntakeQ6();
 }
 
