@@ -455,6 +455,27 @@ function handleIntakeQ4() {
   askIntakeQ5();
 }
 
+// function to get the fifth intake question: Would you prefer your sessions online or in-person?
+function askIntakeQ5() {
+  chatState.phase = 'intake_q5';
+
+  showTypingIndicator();
+  setTimeout(() => {
+    hideTypingIndicator();
+    appendBotMessage(
+      "Would you prefer your sessions online or in-person?<br><br>" +
+      "<button class='menu-option' onclick='sendMessage(\"intake_q5: Online\")'>💻 Online</button>" +
+      "<button class='menu-option' onclick='sendMessage(\"intake_q5: In-person\")'>🏢 In-person</button>" +
+      "<button class='menu-option' onclick='sendMessage(\"intake_q5: No preference\")'>🤷 No preference</button>"
+    );
+  }, 800);
+}
+
+function handleIntakeQ5(text) {
+  const answer = text.replace('intake_q5:', '').trim();
+  chatState.patientProfile.sessionType = answer;
+  askIntakeQ6();
+}
 
 
 
@@ -1347,6 +1368,9 @@ function handlePhase(text) {
       if (text.startsWith('intake_q3:')) handleIntakeQ3(text);
       break;
     case 'intake_q4':
+      break;
+    case 'intake_q5':
+      if (text.startsWith('intake_q5:')) handleIntakeQ5(text);
       break;
     default:
       break;
