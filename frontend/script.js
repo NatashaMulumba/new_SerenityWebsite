@@ -87,7 +87,16 @@ function sanitiseInput(text) {
   return { passed: true, text: cleaned };
 }
 
-
+// function that appends the bot message to the chat window if sanitisation fails
+function showSanitiseBlockMessage() {
+  showTypingIndicator();
+  setTimeout(() => {
+    hideTypingIndicator();
+    appendBotMessage(
+      "That does not look like a valid response. Please try again in your own words."
+    );
+  }, 600);
+}
 
 
 
