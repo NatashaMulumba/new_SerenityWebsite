@@ -26,13 +26,67 @@ const chatState = {
   }
 };
 
-// List of Keywords that Trigger crisis line
-const CRISIS_KEYWORDS = [
-  'suicide', 'suicidal', 'kill myself', 'end my life', 'want to die',
-  'self harm', 'self-harm', 'cutting myself', 'hurt myself',
-  'no reason to live', 'cant go on', "can't go on", 'hopeless',
-  'overdose', 'not worth living'
-];
+
+
+// this function checks four 4 checks: crisis words, prompt injection, PII strip, gibberish detection
+function sanitiseInput(text) {
+  const t = text.trim();
+
+  // CHECK 1: Crisis keywords
+  const crisisKeywords = [
+    'suicide', 'suicidal', 'kill myself', 'end my life', 'end it all',
+    'self-harm', 'self harm', 'hurt myself', 'cut myself',
+    'don\'t want to be here', 'dont want to be here',
+    'no reason to live', 'want to die', 'better off dead'
+  ];
+  const lowerT = t.toLowerCase();
+  const hasCrisis = crisisKeywords.some(k => lowerT.includes(k));
+  if (hasCrisis) {
+    return { passed: false, reason: 'crisis' };
+  }
+
+  // CHECK 2: Prompt injection detection
+  const injectionPhrases = [
+    'ignore previous instructions', 'ignore all previous',
+    'you are now', 'forget everything', 'forget all previous',
+    'act as', 'act like', 'system prompt', 'disregard',
+    'new instructions', 'override', 'jailbreak',
+    'pretend you are', 'pretend to be', 'your new role'
+  ];
+  const hasInjection = injectionPhrases.some(p => lowerT.includes(p));
+  if (hasInjection) {
+    return { passed: false, reason: 'injection' };
+  }
+
+  // CHECK 3: PII strip (silent, never blocks)
+  let cleaned = t;
+
+  // SA phone numbers: 0XXXXXXXXX or +27XXXXXXXXX
+  cleaned = cleaned.replace(/(\+27|0)[6-8][0-9]{8}/g, '[removed]');
+
+  // Email addresses
+  cleaned = cleaned.replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, '[removed]');
+
+  // SA ID numbers: 13 consecutive digits
+  cleaned = cleaned.replace(/\b\d{13}\b/g, '[removed]');
+
+  // Credit card patterns: 16 digits, optionally spaced or dashed
+  cleaned = cleaned.replace(/\b(\d{4}[\s-]?){3}\d{4}\b/g, '[removed]');
+
+  // CHECK 4: Gibberish detection
+  const emojiOnly = /^[\p{Emoji}\s]+$/u.test(cleaned);
+  const numbersOnly = /^\d+$/.test(cleaned);
+  const noVowels = !/[aeiouAEIOU]/.test(cleaned) && cleaned.length > 4;
+  const repeating = /(.)\1{4,}/.test(cleaned);
+
+  if (emojiOnly || numbersOnly || noVowels || repeating) {
+    return { passed: false, reason: 'gibberish' };
+  }
+
+  // All checks passed
+  return { passed: true, text: cleaned };
+}
+
 
 
 
