@@ -364,24 +364,22 @@ function askIntakeQ2() {
     hideTypingIndicator();
     appendBotMessage(
       "Who is this session for?<br><br>" +
-      "<button class='menu-option' onclick='sendMessage(\"intake_q2: Individuals\")'>🙋 Just me</button>" +
-      "<button class='menu-option' onclick='sendMessage(\"intake_q2: Couples\")'>👫 My partner and I</button>" +
-      "<button class='menu-option' onclick='sendMessage(\"intake_q2: Family\")'>👨‍👩‍👧 My family</button>" +
-      "<button class='menu-option' onclick='sendMessage(\"intake_q2: Group\")'>👥 A group</button>"
+      "<button class='menu-option' onclick='selectIntakeQ2(\"Individual\")'>🙋 Just me</button>" +
+      "<button class='menu-option' onclick='selectIntakeQ2(\"Couples\")'>👫 My partner and I</button>" +
+      "<button class='menu-option' onclick='selectIntakeQ2(\"Family\")'>👨‍👩‍👧 My family</button>" +
+      "<button class='menu-option' onclick='selectIntakeQ2(\"Group\")'>👥 A group</button>"
     );
   }, 800);
 }
 
-// Based on user input, decided to go to Q3 or Q4
-function handleIntakeQ2(text) {
-  const answer = text.replace('intake_q2:', '').trim();
+function selectIntakeQ2(answer) {
   chatState.patientProfile.sessionFor = answer;
-
+  appendUserMessage(answer);
   if (answer === 'Individuals') {
-    askIntakeQ3(); // only individuals need age group
+    askIntakeQ3();
   } else {
-    chatState.patientProfile.ageGroup = null; // not applicable
-    askIntakeQ4(); // skip straight to language
+    chatState.patientProfile.ageGroup = null;
+    askIntakeQ4();
   }
 }
 
@@ -394,16 +392,16 @@ function askIntakeQ3() {
     hideTypingIndicator();
     appendBotMessage(
       "What age group best describes you?<br><br>" +
-      "<button class='menu-option' onclick='sendMessage(\"intake_q3: Child/Teen\")'>🧒 Child or Teen (under 18)</button>" +
-      "<button class='menu-option' onclick='sendMessage(\"intake_q3: Adult\")'>🧑 Adult (18 to 64)</button>" +
-      "<button class='menu-option' onclick='sendMessage(\"intake_q3: Elder\")'>🧓 Elder (65+)</button>"
+      "<button class='menu-option' onclick='selectIntakeQ3(\"Child/Teen\")'>🧒 Child or Teen (under 18)</button>" +
+      "<button class='menu-option' onclick='selectIntakeQ3(\"Adult\")'>🧑 Adult (18 to 64)</button>" +
+      "<button class='menu-option' onclick='selectIntakeQ3(\"Elder\")'>🧓 Elder (65+)</button>"
     );
   }, 800);
 }
 
-function handleIntakeQ3(text) {
-  const answer = text.replace('intake_q3:', '').trim();
+function selectIntakeQ3(answer) {
   chatState.patientProfile.ageGroup = answer;
+  appendUserMessage(answer);
   askIntakeQ4();
 }
 
@@ -1390,18 +1388,14 @@ function handlePhase(text) {
     case 'intake_q1':
       break;
     case 'intake_q2':
-      if (text.startsWith('intake_q2:')) handleIntakeQ2(text);
       break;
     case 'intake_q3':
-      if (text.startsWith('intake_q3:')) handleIntakeQ3(text);
       break;
     case 'intake_q4':
       break;
     case 'intake_q5':
-      if (text.startsWith('intake_q5:')) handleIntakeQ5(text);
       break;
     case 'intake_q6':
-      if (text.startsWith('intake_q6:')) handleIntakeQ6(text);
       break;
     default:
       break;
