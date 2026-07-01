@@ -8,6 +8,7 @@ const chatState = {
     sessionFor: null,
     ageGroup: null,
     language: null,
+    sessionType: null,
     therapistPrefs: { gender: null, background: null },
     availability: [],
     priorTherapy: null,
@@ -196,6 +197,7 @@ function resetToWelcome() {
     sessionFor: null,
     ageGroup: null,
     language: null,
+    sessionType: null,
     therapistPrefs: { gender: null, background: null },
     availability: [],
     priorTherapy: null,
@@ -270,6 +272,116 @@ function handleBrowsingCardInput(text) {
     resetToWelcome();
   }
 }
+
+// ----------- BOOKING FLOW -----------------
+
+
+// create a new patient profile and start the intake process
+function startIntake() {
+  chatState.phase = 'intake_q1';
+
+  chatState.patientProfile = {
+    presentingIssue: null,
+    sessionFor: null,
+    ageGroup: null,
+    language: null,
+    sessionType: null,
+    therapistPrefs: { gender: null, background: null },
+    availability: [],
+    priorTherapy: null,
+    priorType: null,
+    priorWorked: null,
+  };
+
+  showTypingIndicator();
+  setTimeout(() => {
+    hideTypingIndicator();
+    appendBotMessage(
+      "Let's find the right therapist for you. I'll ask a few short questions and " +
+      "it takes about a minute.<br><br>" +
+      "First, in your own words, what's bringing you to therapy? " +
+      "This helps us find someone with the right experience for you."
+    );
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'chat-message bot-message';
+    wrapper.style.padding = '0';
+    wrapper.style.background = 'none';
+    wrapper.id = 'intake-q1-widget';
+    wrapper.innerHTML = `
+      <div class="presenting-widget">
+        <textarea
+          id="intake-presenting-input"
+          class="presenting-textarea"
+          maxlength="300"
+          placeholder="e.g. I've been feeling anxious at work and struggling to sleep..."
+          oninput="intakePresentingCount(this)"
+        ></textarea>
+        <div class="presenting-footer">
+          <span class="presenting-counter" id="intake-presenting-counter">300 characters remaining</span>
+          <button class="presenting-submit" onclick="intakePresentingSubmit()">Continue →</button>
+        </div>
+      </div>
+    `;
+    document.querySelector('#chat-messages').appendChild(wrapper);
+    scrollToBottom();
+    setTimeout(() => document.getElementById('intake-presenting-input')?.focus(), 100);
+  }, 800);
+}
+
+function intakePresentingCount(textarea) {
+  const remaining = 300 - textarea.value.length;
+  const counter = document.getElementById('intake-presenting-counter');
+  if (counter) {
+    counter.textContent = `${remaining} character${remaining === 1 ? '' : 's'} remaining`;
+    counter.style.color = remaining < 50 ? '#c0392b' : '';
+  }
+}
+
+function intakePresentingSubmit() {
+  const input = document.getElementById('intake-presenting-input');
+  if (!input) return;
+  const value = input.value.trim();
+
+  if (value.length < 10) {
+    input.style.borderColor = '#c0392b';
+    const counter = document.getElementById('intake-presenting-counter');
+    if (counter) counter.textContent = 'Please share a little more. Even a sentence helps us find the right match.';
+    return;
+  }
+
+  chatState.patientProfile.presentingIssue = value;
+  appendUserMessage(value.length > 60 ? value.substring(0, 60) + '…' : value);
+  askIntakeQ2();
+}
+
+// ----------- BOOKING FLOW -----------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Validates a single booking field — returns an error string or null if valid
 function validateBookingInput(step, value) {
@@ -1123,6 +1235,8 @@ function handlePhase(text) {
     case 'booking_cancel_confirm':
       handleCancelConfirm(text);
       break;
+    case 'intake_q1':
+      break;
     default:
       break;
   }
@@ -1159,7 +1273,7 @@ function handleMenuInput(text) {
   const lower = text.toLowerCase();
 
   if (lower.includes('find my match') || lower.includes('🔍')) {
-    chatState.phase = 'intake_q1';
+    startIntake();
     // handleQ1() will go here next session
   } else if (lower.includes('browse the team') || lower.includes('👤')) {
      handleBrowseTeam();
