@@ -486,19 +486,18 @@ function askIntakeQ6() {
     hideTypingIndicator();
     appendBotMessage(
       "Do you have a preference for your therapist's gender?<br><br>" +
-      "<button class='menu-option' onclick='sendMessage(\"intake_q6: Female\")'>👩 Female</button>" +
-      "<button class='menu-option' onclick='sendMessage(\"intake_q6: Male\")'>👨 Male</button>" +
-      "<button class='menu-option' onclick='sendMessage(\"intake_q6: No preference\")'>🤷 No preference</button>"
+      "<button class='menu-option' onclick='selectIntakeQ6(\"Female\")'>👩 Female</button>" +
+      "<button class='menu-option' onclick='selectIntakeQ6(\"Male\")'>👨 Male</button>" +
+      "<button class='menu-option' onclick='selectIntakeQ6(\"No preference\")'>🤷 No preference</button>"
     );
   }, 800);
 }
 
-function handleIntakeQ6(text) {
-  const answer = text.replace('intake_q6:', '').trim();
+function selectIntakeQ6(answer) {
   chatState.patientProfile.therapistPrefs.gender = answer === 'No preference' ? null : answer;
+  appendUserMessage(answer);
   askIntakeQ7();
 }
-
 
 
 
