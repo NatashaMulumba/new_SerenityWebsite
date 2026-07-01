@@ -355,6 +355,109 @@ function intakePresentingSubmit() {
   askIntakeQ2();
 }
 
+// Get the second intake question: Who is this session for? (individual, couple, family, group)
+function askIntakeQ2() {
+  chatState.phase = 'intake_q2';
+
+  showTypingIndicator();
+  setTimeout(() => {
+    hideTypingIndicator();
+    appendBotMessage(
+      "Who is this session for?<br><br>" +
+      "<button class='menu-option' onclick='sendMessage(\"intake_q2: Individuals\")'>🙋 Just me</button>" +
+      "<button class='menu-option' onclick='sendMessage(\"intake_q2: Couples\")'>👫 My partner and I</button>" +
+      "<button class='menu-option' onclick='sendMessage(\"intake_q2: Family\")'>👨‍👩‍👧 My family</button>" +
+      "<button class='menu-option' onclick='sendMessage(\"intake_q2: Group\")'>👥 A group</button>"
+    );
+  }, 800);
+}
+
+// Based on user input, decided to go to Q3 or Q4
+function handleIntakeQ2(text) {
+  const answer = text.replace('intake_q2:', '').trim();
+  chatState.patientProfile.sessionFor = answer;
+
+  if (answer === 'Individuals') {
+    askIntakeQ3(); // only individuals need age group
+  } else {
+    chatState.patientProfile.ageGroup = null; // not applicable
+    askIntakeQ4(); // skip straight to language
+  }
+}
+
+// Get the third intake question: What age group best describes you? (only for individuals)
+function askIntakeQ3() {
+  chatState.phase = 'intake_q3';
+
+  showTypingIndicator();
+  setTimeout(() => {
+    hideTypingIndicator();
+    appendBotMessage(
+      "What age group best describes you?<br><br>" +
+      "<button class='menu-option' onclick='sendMessage(\"intake_q3: Child/Teen\")'>🧒 Child or Teen (under 18)</button>" +
+      "<button class='menu-option' onclick='sendMessage(\"intake_q3: Adult\")'>🧑 Adult (18 to 64)</button>" +
+      "<button class='menu-option' onclick='sendMessage(\"intake_q3: Elder\")'>🧓 Elder (65+)</button>"
+    );
+  }, 800);
+}
+
+function handleIntakeQ3(text) {
+  const answer = text.replace('intake_q3:', '').trim();
+  chatState.patientProfile.ageGroup = answer;
+  askIntakeQ4();
+}
+
+// function to get the fourth intake question: What language do you prefer for your session?
+function askIntakeQ4() {
+  chatState.phase = 'intake_q4';
+
+  const languages = [
+    'Afrikaans', 'English', 'French', 'Mandarin', 'Northern Sotho',
+    'Ndebele', 'Portuguese', 'Sesotho', 'Spanish', 'Swahili',
+    'Swati', 'Tamil', 'Tsonga', 'Tswana', 'Vietnamese',
+    'Xhosa', 'Zulu'
+  ];
+
+  showTypingIndicator();
+  setTimeout(() => {
+    hideTypingIndicator();
+    appendBotMessage("What language would you prefer your sessions to be in?");
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'chat-message bot-message';
+    wrapper.style.padding = '0';
+    wrapper.style.background = 'none';
+    wrapper.innerHTML = `
+      <div class="intake-dropdown-widget">
+        <select id="intake-language-select" class="intake-dropdown">
+          <option value="" disabled selected>Select a language...</option>
+          ${languages.map(l => `<option value="${l}">${l}</option>`).join('')}
+        </select>
+        <button class="presenting-submit" onclick="handleIntakeQ4()">Continue →</button>
+      </div>
+    `;
+    document.querySelector('#chat-messages').appendChild(wrapper);
+    scrollToBottom();
+  }, 800);
+}
+
+function handleIntakeQ4() {
+  const select = document.getElementById('intake-language-select');
+  const value = select ? select.value : '';
+
+  if (!value) {
+    select.style.borderColor = '#c0392b';
+    return;
+  }
+
+  chatState.patientProfile.language = value;
+  appendUserMessage(value);
+  askIntakeQ5();
+}
+
+
+
+
 // ----------- BOOKING FLOW -----------------
 
 
@@ -1236,6 +1339,14 @@ function handlePhase(text) {
       handleCancelConfirm(text);
       break;
     case 'intake_q1':
+      break;
+    case 'intake_q2':
+      if (text.startsWith('intake_q2:')) handleIntakeQ2(text);
+      break;
+    case 'intake_q3':
+      if (text.startsWith('intake_q3:')) handleIntakeQ3(text);
+      break;
+    case 'intake_q4':
       break;
     default:
       break;
