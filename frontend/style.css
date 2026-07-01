@@ -1568,6 +1568,38 @@ footer {
   line-height: 1.5;
 }
 
+
+/*--------------CSS for dropdown widget---------------------*/
+.intake-dropdown-widget {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: var(--white);
+  border-radius: 12px;
+}
+
+.intake-dropdown {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--green);
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--ink);
+  background: var(--cream);
+  cursor: pointer;
+  appearance: auto;
+}
+
+.intake-dropdown:focus {
+  outline: none;
+  border-color: var(--green-deep);
+}
+
+/*--------------CSS for dropdown widget---------------------*/
+
+
 /*--------------------CHATBOT STYLING SECTION-------------------------*/
 
 
