@@ -249,13 +249,33 @@ function appendUserMessage(text) {
   scrollToBottom();
 }
 // Append bot message into a right-aligned bubble
-function appendBotMessage(text) {
+// OLD VERSION
+// function appendBotMessage(text) {
+//   const div = document.createElement('div');
+//   div.classList.add('chat-message', 'bot-message');
+//   div.innerHTML = text;           // innerHTML so we can use <br> and links later
+//   chatMessages.appendChild(div);
+//   scrollToBottom();
+// }
+
+
+// updated appendBotMessage to auto-wire button locking on every menu-option button
+function appendBotMessage(html) {
   const div = document.createElement('div');
   div.classList.add('chat-message', 'bot-message');
-  div.innerHTML = text;           // innerHTML so we can use <br> and links later
-  chatMessages.appendChild(div);
+  div.innerHTML = html;
+
+  // Auto-wire button locking on every menu-option button
+  div.querySelectorAll('button.menu-option').forEach(btn => {
+    const original = btn.getAttribute('onclick');
+    btn.setAttribute('onclick', `lockSiblingButtons(this); ${original}`);
+  });
+
+  document.querySelector('#chat-messages').appendChild(div);
   scrollToBottom();
 }
+
+
 
 //function to redisplay menu options
 function showMenuOptions() {
