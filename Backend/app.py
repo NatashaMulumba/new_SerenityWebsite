@@ -31,11 +31,125 @@ mail = Mail(app)
 
 
 # Get prompt text from textfile
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-PROMPT_PATH = os.path.join(BASE_DIR, 'prompt.txt')
-with open(PROMPT_PATH, 'r') as file:
-    SYSTEM_PROMPT = file.read()
+def build_match_prompt(patient_profile, doctor_list):
+
+    # Bio lookup keyed by doctor ID
+    bios = {
+        1: "Best suited to clients across all life stages presenting with complex psychological conditions including personality disorders, psychosis, and severe mood instability. Particularly effective with families and couples where one member's clinical diagnosis is affecting the entire system.",
+        2: "Best suited to individuals and families navigating grief, relational breakdown, or persistent low mood who need a warm, culturally attuned space to process. Particularly effective with clients who feel unheard in their relationships or are carrying unresolved loss.",
+        3: "Best suited to older children, teens, and adults carrying trauma, PTSD, or mood instability who need a structured, evidence-based approach to reclaim their narrative. Particularly effective with clients who have tried conventional therapy before and need a more meaning-focused framework.",
+        4: "Best suited to children, teens, and adults dealing with a wide range of concerns from anxiety and grief to identity questions and substance use. Particularly effective with younger clients and those whose issues benefit from exploratory, relationship-centred work rather than a structured protocol.",
+        5: "Best suited to adults experiencing anxiety, low mood, or a sense of being stuck at a life crossroads who respond well to practical, present-focused techniques. Particularly effective with clients who want concrete tools alongside deeper self-awareness.",
+        6: "Best suited to teens and adults who have experienced trauma and need a therapist who works at the emotional depth of the wound rather than just its surface symptoms. Particularly effective with clients whose trauma has disrupted their capacity for trust or close relationships.",
+        7: "Best suited to working individuals whose mental health struggles are rooted in professional pressure, financial anxiety, or career uncertainty rather than clinical history. Particularly effective with clients who need both psychological support and practical direction to move forward at work.",
+        8: "Best suited to individuals dealing with anxiety, disrupted sleep, or persistent low mood who prefer a structured, evidence-based approach with clear techniques to practice between sessions. Particularly effective with clients whose physical symptoms such as insomnia are tied to underlying emotional patterns.",
+        9: "Best suited to adults navigating significant life changes, loss, or a search for renewed direction who want a strengths-focused, future-oriented space rather than a clinical diagnosis. Particularly effective with clients who feel their resilience is there but need help finding it again.",
+        10: "Best suited to adults and older clients dealing with anxiety, depression, or work-related stress who benefit from a flexible, multi-modal approach grounded in their existing strengths. Particularly effective with clients who have had mixed results with a single therapy modality and need an approach tailored to their neurological and psychological profile.",
+        11: "Best suited to adults recovering from complex trauma, narcissistic abuse, or a significant career disruption who need a therapist who combines self-compassion work with practical forward movement. Particularly effective with clients who are highly self-critical or have spent years minimising the impact of what they experienced.",
+        12: "Best suited to adults and couples whose primary pain point is relational, recurring conflict, family breakdown, or a sense of disconnection in their closest relationships. Particularly effective with clients who have tried resolving relationship issues independently and need a skilled third party to help shift entrenched patterns.",
+        13: "Best suited to adults experiencing persistent depression, anxiety, or a deep sense of emotional disturbance who are drawn to understanding the unconscious roots of their suffering rather than managing surface symptoms. Particularly effective with clients who are intellectually curious about their inner world and want depth over speed."
+    }
+
+    # Build the therapist list section
+    therapist_lines = []
+    for d in doctor_list:
+        bio = bios.get(d['id'], '')
+        line = (
+            f"ID: {d['id']} | "
+            f"Name: Dr {d['first_name']} {d['last_name']} | "
+            f"Title: {d['title']} | "
+            f"Specialisation: {d['specialisation']} | "
+            f"Approach: {d['approach']} | "
+            f"Language: {d['language']} | "
+            f"Session type: {d['session_type']} | "
+            f"Age group: {d['age_group']} | "
+            f"Participants: {d['participants']} | "
+            f"Gender: {d['gender']} | "
+            f"Fee: R{d['price']} | "
+            f"Bio: {bio}"
+        )
+        therapist_lines.append(line)
+
+    therapist_block = "\n".join(therapist_lines)
+
+    # Build the patient profile section
+    gender_pref = patient_profile.get('therapistPrefs', {}).get('gender') or 'No preference'
+    age_group = patient_profile.get('ageGroup') or 'Not specified'
+    prior_worked = patient_profile.get('priorWorked') or 'Not provided'
+
+    prompt = f"""You are a clinical matching assistant for Serenity Wellness Centre in South Africa.
+    Your job is to recommend the single best therapist for a patient based on their profile and the available practitioners listed below.
+
+    INSTRUCTIONS:
+    - Read the presenting issue first and most carefully. It is the strongest signal.
+    - Reason through each therapist step by step before deciding.
+    - Apply hard filters in this order: participants, age group (for individuals only), language.
+    - Then rank remaining therapists by: presenting issue fit, specialisation, approach, session type, gender preference.
+    - Return ONLY valid JSON in the exact schema provided. No other text before or after.
+    - You may ONLY recommend a therapist whose ID appears in the THERAPIST LIST below.
+    - Do NOT invent names, specialisations, languages, or any other attributes.
+    - If the presenting issue is incoherent or does not describe a real human experience, return a no_match result with gap_reason: "incoherent_input".
+    - If no therapist meets the hard filter criteria, return a no_match result with the specific gap named.
+
+    PATIENT PROFILE:
+    - Presenting issue: {patient_profile.get('presentingIssue', '')}
+    - Session for: {patient_profile.get('sessionFor', '')}
+    - Age group: {age_group}
+    - Preferred language: {patient_profile.get('language', '')}
+    - Session type preference: {patient_profile.get('sessionType', '')}
+    - Therapist gender preference: {gender_pref}
+    - Prior therapy: {patient_profile.get('priorTherapy', '')}
+    - What worked or did not in prior therapy: {prior_worked}
+
+    THERAPIST LIST:
+    {therapist_block}
+
+    REASONING STEPS — work through each step before writing your answer:
+    1. What is the core presenting issue? What type of specialisation and approach would best address it?
+    2. Which therapists' specialisation and bio best match this presenting issue?
+    3. Of those, which support the requested participant type ({patient_profile.get('sessionFor', '')})?
+    4. Of those, which cover the age group ({age_group})?
+    5. Of those, which speak {patient_profile.get('language', '')}?
+    6. Of those, which match the session type preference ({patient_profile.get('sessionType', '')})?
+    7. Of those, which match the gender preference ({gender_pref})?
+    8. Who is the single strongest remaining match? State the doctor ID and explain why in one to two sentences.
+
+    RESPONSE SCHEMA — return ONLY this JSON, no other text, no markdown, no code fences:
+
+    If a strong match exists:
+    {{
+    "match": {{
+        "doctor_id": <number>,
+        "reasoning": "<1-2 sentences explaining the match>",
+        "confidence": <number 0-100>
+    }},
+    "no_match": null,
+    "gap_reason": null
+    }}
+
+    If no suitable match exists:
+    {{
+    "match": null,
+    "no_match": {{
+        "top_ids": [<id>, <id>],
+        "gap_reason": "<specific preference that could not be met>"
+    }},
+    "gap_reason": "<same as above>"
+    }}"""
+
+    return prompt
 # Allow genai to use API key from .env file
+
+
+
+
+
+
+
+
+
+
+
 
 
 @app.route('/chat', methods =['POST'])
