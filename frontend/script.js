@@ -327,7 +327,7 @@ function handleBrowseTeam() {
       chatState.browseList = therapists;
 
       const buttons = therapists.map(t =>
-        `<button class="therapist-option" onclick="showTherapistCard(${t.id})">
+        `<button class="therapist-option" onclick="lockSiblingButtons(this); showTherapistCard(${t.id})">
           <span class="t-name">Dr ${t.first_name} ${t.last_name}</span>
           <span class="t-spec">${t.title}</span>
         </button>`
