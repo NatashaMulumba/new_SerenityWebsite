@@ -458,7 +458,7 @@ function askIntakeQ2() {
 function selectIntakeQ2(answer) {
   chatState.patientProfile.sessionFor = answer;
   appendUserMessage(answer);
-  if (answer === 'Individuals') {
+  if (answer === 'Individual') {
     askIntakeQ3();
   } else {
     chatState.patientProfile.ageGroup = null;
