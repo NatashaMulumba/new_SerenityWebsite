@@ -200,13 +200,13 @@ def match_therapist_mock():
     # Current scenario: Test Case 1 — Individual, exact match
     mock_result = {
     "result": {
-        "match": None,
-        "no_match": {
-            "doctor_id": 7,
-            "reasoning": "We could not find a therapist who speaks Vietnamese, but Dr Natasha Dlamini specialises in workplace stress and burnout and her practical approach closely matches what you are dealing with.",
-            "gap_reason": "language: Vietnamese"
+        "match": {
+            "doctor_id": 9,
+            "reasoning": "Dr Tony Livingston specialises in life transitions and grief using positive psychology and narrative therapy. His strengths-focused approach is well matched to your search for renewed purpose after retirement.",
+            "confidence": 89
         },
-        "gap_reason": "language: Vietnamese"
+        "no_match": None,
+        "gap_reason": None
     }
 }
 
@@ -331,15 +331,14 @@ def send_confirmation_email(to_email, data, reference):
                     </tr>
                     <tr>
                         <td style="padding: 10px 0; color: #888;">Session type</td>
-                        <td style="padding: 10px 0;">In-person / Online</td>
+                        <td style="padding: 10px 0;">{data.get('session_type', 'In-person')}</td>
                     </tr>
                 </table>
 
                 <div style="background: #f7f4ee; border-radius: 8px; padding: 16px; margin-bottom: 24px; font-size: 0.85rem;">
-                    <strong>Before your first session:</strong><br><br>
-                    Please arrive <strong>30–45 minutes early</strong> to complete your intake forms 
-                    and arrange payment and medical aid. Bring your <strong>ID</strong> and 
-                    <strong>medical aid card</strong> if applicable.
+                    {'<strong>Before your session:</strong><br><br>Our receptionist Cleo will be in contact with you before your appointment with a secure video link and any details you need to join your session. Please ensure you have a stable internet connection and a quiet, private space ready.<br><br>Need to cancel or reschedule your online session? Please give us at least <strong>24 hours notice</strong>.' 
+                    if data.get('session_type') == 'Online' else 
+                    '<strong>Before your session:</strong><br><br>Please arrive <strong>30 to 45 minutes early</strong> to complete your intake forms and arrange payment and medical aid. Bring your <strong>ID</strong> and <strong>medical aid card</strong> if applicable.<br><br>Our receptionist Cleo will be in contact with you before your appointment to confirm any outstanding details.'}
                 </div>
 
                 <p style="font-size: 0.85rem; color: #888; margin-bottom: 4px;">
