@@ -1838,21 +1838,15 @@ function writeBooking() {
 }
 
 
-
-
-
-
-
- 
-
 // Render the full detail card for the selected therapist
-function showTherapistCard(id, showReasoning=false) {
+function showTherapistCard(id, showReasoning = false) {
   const t = chatState.browseList.find(d => d.id === id);
   if (!t) return;
 
   chatState.selectedDoctor = t;
 
   const initials = t.first_name.charAt(0) + t.last_name.charAt(0);
+  const displayText = showReasoning && chatState.matchReasoning ? chatState.matchReasoning : t.bio;
 
   appendBotMessage(
     `<div class="bot-therapist-card">
@@ -1864,13 +1858,13 @@ function showTherapistCard(id, showReasoning=false) {
         </div>
       </div>
       <div class="btc-body">
-        <p class="btc-bio">${showReasoning && chatState.matchReasoning ? chatState.matchReasoning : t.bio}</p>
-        <span class="btc-fee"> R${t.price} / session</span>
+        <p class="btc-bio">${displayText}</p>
+        <span class="btc-fee">R${t.price} / session</span>
         <div class="btc-actions">
-          <button class="btc-btn-book" onclick="appendUserMessage('Book a session'); startBooking();">Book a session</button>
-          <button class="btc-btn-back" onclick="sendMessage('nav: back to team')">Back to team</button>
+          <button class="btc-btn-book" onclick="lockSiblingButtons(this); appendUserMessage('Book a session'); startBooking();">Book a session</button>
+          <button class="btc-btn-back" onclick="lockSiblingButtons(this); sendMessage('nav: back to team')">Back to team</button>
         </div>
-        <button class="btc-btn-menu" onclick="sendMessage('nav: main menu')">Back to main menu</button>
+        <button class="btc-btn-menu" onclick="lockSiblingButtons(this); sendMessage('nav: main menu')">Back to main menu</button>
       </div>
     </div>`
   );
