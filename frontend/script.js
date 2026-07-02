@@ -46,15 +46,9 @@ const CRISIS_KEYWORDS = [
 function sanitiseInput(text) {
   const t = text.trim();
 
-  // CHECK 1: Crisis keywords
-  const crisisKeywords = [
-    'suicide', 'suicidal', 'kill myself', 'end my life', 'end it all',
-    'self-harm', 'self harm', 'hurt myself', 'cut myself',
-    'don\'t want to be here', 'dont want to be here',
-    'no reason to live', 'want to die', 'better off dead'
-  ];
+   // CHECK 1: Crisis keywords — uses global CRISIS_KEYWORDS array
   const lowerT = t.toLowerCase();
-  const hasCrisis = crisisKeywords.some(k => lowerT.includes(k));
+  const hasCrisis = CRISIS_KEYWORDS.some(k => lowerT.includes(k));
   if (hasCrisis) {
     return { passed: false, reason: 'crisis' };
   }
@@ -417,27 +411,39 @@ function intakePresentingCount(textarea) {
 
 
 //update intakePresentingSubmit function to validate input length and add sanitisation check
+// update intakePresentingSubmit to account for mixed case e.g. gibberish + crisis keywords
 function intakePresentingSubmit() {
   const input = document.getElementById('intake-presenting-input');
+  const errorEl = document.getElementById('intake-presenting-error');
   if (!input) return;
   const value = input.value.trim();
 
+  // Reset error state
+  input.style.borderColor = '';
+  if (errorEl) errorEl.textContent = '';
+
+  // Length check
   if (value.length < 10) {
     input.style.borderColor = '#c0392b';
-    const counter = document.getElementById('intake-presenting-counter');
-    if (counter) counter.textContent = 'Please share a little more. Even a sentence helps us find the right match.';
+    if (errorEl) errorEl.textContent = 'Please share a little more. Even a sentence helps us find the right match.';
     return;
   }
 
-  const result = sanitiseInput(value);
+  // Crisis check first — always before gibberish
+  const lowerVal = value.toLowerCase();
+  const hasCrisis = CRISIS_KEYWORDS.some(k => lowerVal.includes(k));
+  if (hasCrisis) {
+    chatState.crisisDetected = true;
+    chatState.phase = 'crisis';
+    handleCrisis();
+    return;
+  }
 
+  // Sanitise check for injection and gibberish
+  const result = sanitiseInput(value);
   if (!result.passed) {
-    if (result.reason === 'crisis') {
-      handlePhase('crisis');
-    } else {
-      input.style.borderColor = '#c0392b';
-      showSanitiseBlockMessage();
-    }
+    input.style.borderColor = '#c0392b';
+    if (errorEl) errorEl.textContent = 'That does not look like a valid response. Please try again in your own words.';
     return;
   }
 
