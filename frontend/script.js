@@ -325,6 +325,7 @@ function handleBrowseTeam() {
       hideTypingIndicator();
 
       chatState.browseList = therapists;
+      chatState.fromMatch = false; // Reset the flag when browsing the team
 
       const buttons = therapists.map(t =>
         `<button class="therapist-option" onclick="lockSiblingButtons(this); showTherapistCard(${t.id})">
@@ -926,6 +927,7 @@ function handleLLMResult(result) {
 
     // Valid match found : set selectedDoctor and route to browsing_card
     chatState.selectedDoctor = doctor;
+    chatState.fromMatch = true; // Flag to show which path called the card
     chatState.matchReasoning = result.match.reasoning;
 
     showTypingIndicator();
@@ -980,6 +982,7 @@ function handleNoMatch(noMatchData) {
         chatState.noMatchDoctor = { ...doctor, matchReasoning: noMatchData.reasoning };
         chatState.phase = 'browsing_card';
         chatState.browseList = chatState.doctorList;
+        chatState.fromMatch = true;
 
         appendBotMessage(
           "If this is non-negotiable for you, tap <strong>Ubuntu Healing Centre</strong> " +
@@ -1188,10 +1191,22 @@ function validateBookingInput(step, value) {
   return null; // valid
 }
 
-// Initialises the booking flow for the selected doctor
+
+// Initialises the booking flow for the selected doctor.
+// If coming from Find My Match, pre-fills prior therapy and presenting concern
+// from patientProfile so the user is not asked again.
 function startBooking() {
   chatState.bookingData = {};
   chatState.bookingStep = 0;
+
+  // Pre-fill fields already collected during Find My Match intake
+  if (chatState.fromMatch) {
+    const p = chatState.patientProfile;
+    chatState.bookingData.prev_therapy = p.priorTherapy || null;
+    chatState.bookingData.prev_detail  = p.priorWorked  || null;
+    chatState.bookingData.presenting   = p.presentingIssue || null;
+  }
+
   const name = `Dr ${chatState.selectedDoctor.first_name} ${chatState.selectedDoctor.last_name}`;
   showTypingIndicator();
   setTimeout(() => {
@@ -1209,6 +1224,15 @@ function askBookingQuestion() {
   const b    = chatState.bookingData;
   const step = chatState.bookingStep;
   const isEditing = Object.keys(b).length > 0;
+
+  // Skip steps already answered by Find My Match intake
+  if (chatState.fromMatch) {
+    if (step === 7 || step === 8 || step === 9) {
+      chatState.bookingStep++;
+      askBookingQuestion();
+      return;
+    }
+  }
 
   function hint(val) {
     return isEditing && val
