@@ -1555,14 +1555,25 @@ function handlePhase(text) {
     case 'intake_q1':
       break;
     case 'intake_q2':
+      appendBotMessage("Please tap one of the options above so I can find the right match for you.");
       break;
     case 'intake_q3':
+      appendBotMessage("Please tap an age group above to continue.");
       break;
     case 'intake_q4':
+      appendBotMessage("Please use the dropdown above to select your preferred language.");
       break;
     case 'intake_q5':
+      appendBotMessage("Please tap your session preference above to continue.");
       break;
     case 'intake_q6':
+      appendBotMessage("Please tap your preference above to continue.");
+      break;
+    case 'intake_q7':
+      appendBotMessage("Please tap Yes or No above to continue.");
+      break;
+    case 'intake_q7b':
+      handleIntakeQ7b(text);
       break;
     default:
       break;
