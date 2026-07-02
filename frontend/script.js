@@ -106,6 +106,18 @@ function showSanitiseBlockMessage() {
   }, 600);
 }
 
+// added button locking to prevent flow corruption when users scroll back 
+function lockSiblingButtons(clickedBtn) {
+  const bubble = clickedBtn.closest('.chat-message');
+  if (!bubble) return;
+  const allButtons = bubble.querySelectorAll('button');
+  allButtons.forEach(btn => {
+    btn.disabled = true;
+    btn.style.opacity = '0.4';
+    btn.style.cursor = 'not-allowed';
+    btn.style.pointerEvents = 'none';
+  });
+}
 
 
 
