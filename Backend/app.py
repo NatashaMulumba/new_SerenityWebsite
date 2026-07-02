@@ -90,8 +90,16 @@ def build_match_prompt(patient_profile, doctor_list):
     - You may ONLY recommend a therapist whose ID appears in the THERAPIST LIST below.
     - Do NOT invent names, specialisations, languages, or any other attributes.
     - If the presenting issue is incoherent or does not describe a real human experience, return a no_match result with gap_reason: "incoherent_input".
-    - If no therapist meets all hard filter criteria, return a no_match result with the single closest alternative doctor, the specific gap named, and a personalised reasoning explaining why this doctor is the best available option despite the gap.
     - Write the reasoning field in second person directed at the user. Use "you" and "your". Never use "the patient", "the client", or any third-person reference to the user.
+    - If no therapist meets all criteria together, return a no_match result with the single closest alternative doctor. The gap_reason must describe the combination of needs that could not be met together in plain, conversational English directed at the user. Do not reduce it to a single attribute. Do not use technical labels like "language:" or "gender:". Write it as a full natural sentence the user can read directly.
+    - Examples of good gap_reason values:
+        - "no therapist at Serenity speaks Zulu and specialises in anxiety and depression"
+        - "no female therapist at Serenity speaks Sesotho and works with trauma"
+        - "no therapist at Serenity offers in-person sessions and speaks Vietnamese"
+    - Examples of bad gap_reason values:
+        - "language: Zulu"
+        - "gender preference unmet"
+        - "session type mismatch"
 
     PATIENT PROFILE:
     - Presenting issue: {patient_profile.get('presentingIssue', '')}
@@ -194,11 +202,11 @@ def match_therapist_mock():
     "result": {
         "match": None,
         "no_match": {
-            "doctor_id": 4,
-            "reasoning": "We could not find a therapist who speaks Sesotho, but Dr Nakia Parker works across depression and identity concerns using a relational approach that would give you the exploratory space you are looking for.",
-            "gap_reason": "language: Sesotho"
+            "doctor_id": 7,
+            "reasoning": "We could not find a therapist who speaks Vietnamese, but Dr Natasha Dlamini specialises in workplace stress and burnout and her practical approach closely matches what you are dealing with.",
+            "gap_reason": "language: Vietnamese"
         },
-        "gap_reason": "language: Sesotho"
+        "gap_reason": "language: Vietnamese"
     }
 }
 
