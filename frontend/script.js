@@ -799,7 +799,15 @@ function handleGuardrailFailure(field) {
 }
 
 
-
+// replace with real Gemini implementation
+function runLLMMatch() {
+  showTypingIndicator();
+  setTimeout(() => {
+    hideTypingIndicator();
+    appendBotMessage("Intake complete. LLM match coming soon.");
+    console.log("patientProfile at handoff:", JSON.stringify(chatState.patientProfile, null, 2));
+  }, 800);
+}
 
 
 
