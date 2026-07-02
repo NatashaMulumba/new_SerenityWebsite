@@ -147,7 +147,6 @@ def build_match_prompt(patient_profile, doctor_list):
 # Allow genai to use API key from .env file
 
 
-
 @app.route('/chat', methods =['POST'])
 def chat():
     data = request.get_json() # get the data from the request
@@ -169,7 +168,7 @@ def get_therapists():
         cursor = conn.cursor(dictionary=True) # convert row to dictionary format
         # query doctors from Database
         cursor.execute( """
-                       SELECT id, first_name, last_name, title, specialisation, bio, price
+                       SELECT id, first_name, last_name, title, specialisation, approach, language, session_type, age_group, participants, gender, bio, price
                        FROM doctors
                        ORDER by last_name
                        """
@@ -195,7 +194,8 @@ def match_therapist_mock():
     "result": {
         "match": None,
         "no_match": {
-            "top_ids": [4, 5],
+            "doctor_id": 4,
+            "reasoning": "We could not find a therapist who speaks Sesotho, but Dr Nakia Parker works across depression and identity concerns using a relational approach that would give you the exploratory space you are looking for.",
             "gap_reason": "language: Sesotho"
         },
         "gap_reason": "language: Sesotho"
