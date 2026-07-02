@@ -401,6 +401,8 @@ function intakePresentingCount(textarea) {
   }
 }
 
+
+//update intakePresentingSubmit function to validate input length and add sanitisation check
 function intakePresentingSubmit() {
   const input = document.getElementById('intake-presenting-input');
   if (!input) return;
@@ -413,10 +415,28 @@ function intakePresentingSubmit() {
     return;
   }
 
-  chatState.patientProfile.presentingIssue = value;
-  appendUserMessage(value.length > 60 ? value.substring(0, 60) + '…' : value);
+  const result = sanitiseInput(value);
+
+  if (!result.passed) {
+    if (result.reason === 'crisis') {
+      handlePhase('crisis');
+    } else {
+      input.style.borderColor = '#c0392b';
+      showSanitiseBlockMessage();
+    }
+    return;
+  }
+
+  chatState.patientProfile.presentingIssue = result.text;
+  appendUserMessage(result.text.length > 60 ? result.text.substring(0, 60) + '...' : result.text);
   askIntakeQ2();
 }
+
+
+
+
+
+
 
 // Get the second intake question: Who is this session for? (individual, couple, family, group)
 function askIntakeQ2() {
