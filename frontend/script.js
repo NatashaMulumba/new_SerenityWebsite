@@ -364,6 +364,12 @@ function startIntake() {
     priorWorked: null,
   };
 
+  // Fetch doctor list early so it is ready for the guardrail and LLM call
+  fetch('http://127.0.0.1:5000/api/therapists')
+    .then(res => res.json())
+    .then(data => { chatState.doctorList = data; })
+    .catch(() => { chatState.doctorList = []; });
+
   showTypingIndicator();
   setTimeout(() => {
     hideTypingIndicator();
