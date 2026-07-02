@@ -968,7 +968,7 @@ function handleNoMatch(noMatchData) {
     hideTypingIndicator();
 
     // Build gap message — if language-related, name the languages the suggested doctor speaks
-    let gapMessage = "Unfortunately we do not currently have a therapist who meets your preference for " + gap + ".";
+    let gapMessage = "We were not able to find a therapist who  " + gap + ".";
     if (gap.toLowerCase().includes('language') && doctor) {
       gapMessage += " Our closest match, Dr " + doctor.first_name + " " + doctor.last_name +
         ", conducts sessions in " + doctor.language + ".";
