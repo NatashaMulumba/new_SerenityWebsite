@@ -176,6 +176,57 @@ def get_therapists():
     except Exception as e:
         return jsonify({'error': str(e)}),500 # error handling
     
+
+
+#-------------------------------- CREATE MOCK MATCH TO TEST BEFORE PROMPTING LLM --------------------------------
+
+#MOCK MATCH ENDPOINT :swap mock_result to test different scenarios
+@app.route('/api/match/mock', methods=['POST'])
+def match_therapist_mock():
+
+    # Swap this object to test different scenarios from serenitybot_test_cases.md
+    # Current scenario: Test Case 1 — Individual, exact match
+    mock_result = {
+        "result": {
+            "match": {
+                "doctor_id": 8,
+                "reasoning": "Dr Peter Mercer specialises in anxiety and sleep disorders using CBT, directly matching the patient's presenting concerns about work anxiety and insomnia.",
+                "confidence": 91
+            },
+            "no_match": None,
+            "gap_reason": None
+        }
+    }
+
+    return jsonify(mock_result), 200
+
+
+
+# ROMPT PREVIEW ENDPOINT : returns assembled prompt without calling Gemini
+@app.route('/api/match/prompt-preview', methods=['POST'])
+def preview_prompt():
+    try:
+        data = request.get_json()
+        patient_profile = data.get('patientProfile')
+        doctor_list = data.get('doctorList')
+
+        if not patient_profile or not doctor_list:
+            return jsonify({'error': 'Missing patientProfile or doctorList'}), 400
+
+        prompt = build_match_prompt(patient_profile, doctor_list)
+        return jsonify({'prompt': prompt}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+
+
+
+
+
+#-------------------------------- CREATE MOCK MATCH TO TEST BEFORE PROMPTING LLM --------------------------------
+    
 #  get available days and times for each doctor
 @app.route('/api/availability', methods=['GET'])
 def get_availability():
