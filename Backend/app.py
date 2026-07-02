@@ -142,16 +142,6 @@ def build_match_prompt(patient_profile, doctor_list):
 
 
 
-
-
-
-
-
-
-
-
-
-
 @app.route('/chat', methods =['POST'])
 def chat():
     data = request.get_json() # get the data from the request
@@ -383,6 +373,51 @@ def create_booking():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    
+@app.route('/api/match', methods=['POST'])
+def match_therapist():
+    try:
+        data = request.get_json()
+        patient_profile = data.get('patientProfile')
+        doctor_list = data.get('doctorList')
+
+        if not patient_profile or not doctor_list:
+            return jsonify({'error': 'Missing patientProfile or doctorList'}), 400
+
+        # Build the prompt
+        prompt = build_match_prompt(patient_profile, doctor_list)
+
+        # Call Gemini
+        from google import genai
+        client = genai.Client(api_key=os.environ.get('GEMINI_API_KEY'))
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt
+        )
+
+        raw = response.text.strip()
+
+        # Strip markdown fences if Gemini wraps the JSON
+        if raw.startswith('```'):
+            raw = raw.split('```')[1]
+            if raw.startswith('json'):
+                raw = raw[4:]
+            raw = raw.strip()
+
+        # Parse JSON response
+        result = json.loads(raw)
+        return jsonify({'result': result, 'prompt_used': prompt}), 200
+
+    except json.JSONDecodeError:
+        return jsonify({'error': 'invalid_json', 'message': 'Gemini returned unparseable output'}), 502
+
+    except Exception as e:
+        error_str = str(e)
+        if '429' in error_str or 'quota' in error_str.lower() or 'exhausted' in error_str.lower():
+            return jsonify({'error': 'quota_exceeded'}), 429
+        if 'timeout' in error_str.lower() or 'connection' in error_str.lower():
+            return jsonify({'error': 'network_error'}), 503
+        return jsonify({'error': 'server_error', 'message': error_str}), 500
     
 if __name__ == '__main__':
     app.run(debug=True)
