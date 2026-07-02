@@ -91,6 +91,7 @@ def build_match_prompt(patient_profile, doctor_list):
     - Do NOT invent names, specialisations, languages, or any other attributes.
     - If the presenting issue is incoherent or does not describe a real human experience, return a no_match result with gap_reason: "incoherent_input".
     - If no therapist meets the hard filter criteria, return a no_match result with the specific gap named.
+    - Write the reasoning field in second person directed at the user. Use "you" and "your". Never use "the patient", "the client", or any third-person reference to the user.
 
     PATIENT PROFILE:
     - Presenting issue: {patient_profile.get('presentingIssue', '')}
@@ -121,7 +122,7 @@ def build_match_prompt(patient_profile, doctor_list):
     {{
     "match": {{
         "doctor_id": <number>,
-        "reasoning": "<1-2 sentences explaining the match>",
+        "reasoning": "<1-2 sentences explaining the match directly to the user using you and your, not third-person language like the patient or the client>",
         "confidence": <number 0-100>
     }},
     "no_match": null,
@@ -187,16 +188,16 @@ def match_therapist_mock():
     # Swap this object to test different scenarios from serenitybot_test_cases.md
     # Current scenario: Test Case 1 — Individual, exact match
     mock_result = {
-        "result": {
-            "match": {
-                "doctor_id": 8,
-                "reasoning": "Dr Peter Mercer specialises in anxiety and sleep disorders using CBT, directly matching the patient's presenting concerns about work anxiety and insomnia.",
-                "confidence": 91
-            },
-            "no_match": None,
-            "gap_reason": None
-        }
+    "result": {
+        "match": {
+            "doctor_id": 2,
+            "reasoning": "Dr Serenity Wells specialises in grief and depression, speaks Zulu, offers in-person sessions, and uses person-centred and interpersonal approaches that align with the patient's preference for deeper exploratory work over structured CBT.",
+            "confidence": 94
+        },
+        "no_match": None,
+        "gap_reason": None
     }
+}
 
     return jsonify(mock_result), 200
 
