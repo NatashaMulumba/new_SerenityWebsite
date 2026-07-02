@@ -952,37 +952,81 @@ function handleNoMatch(noMatchData) {
     setTimeout(() => {
       let buttons = '';
       if (count >= 1) {
-        buttons += `<button class='menu-option' onclick='showNoMatchDoctors()'>👤 See suggested therapists</button>`;
+        buttons += "<button class='menu-option no-match-choice-btn' onclick='showNoMatchDoctors()'>👤 See suggested therapists</button>";
       }
-      buttons += `<button class='menu-option' onclick='showSisterCentreReferral()'>🌿 Connect with Ubuntu Healing Centre</button>`;
-      buttons += `<button class='menu-option' onclick='sendMessage(\"nav: main menu\")'>🏠 Back to main menu</button>`;
+      buttons += "<button class='menu-option no-match-choice-btn' onclick='showSisterCentreReferral()'>🌿 Connect with Ubuntu Healing Centre</button>";
+      buttons += "<button class='menu-option no-match-choice-btn' onclick='sendMessage(\"nav: main menu\")'>🏠 Back to main menu</button>";
 
       appendBotMessage(buttons);
 
       // Store top doctors for the show function
       chatState.noMatchDoctors = topDoctors;
-    }, 600);
+    }, 1000);
 
-  }, 800);
+  }, 2000);
 }
 
 
 // Shows the top 1 or 2 no-match doctor cards side by side
+// Shows the top 1 or 2 no-match doctor cards
 function showNoMatchDoctors() {
   const doctors = chatState.noMatchDoctors || [];
   if (doctors.length === 0) return;
+
+  // Disable all no-match choice buttons so user cannot click them again
+  document.querySelectorAll('.no-match-choice-btn').forEach(btn => {
+    btn.disabled = true;
+    btn.style.opacity = '0.4';
+    btn.style.cursor = 'not-allowed';
+  });
+
+  // Set phase and browseList before rendering cards
+  chatState.phase = 'browsing_card';
+  chatState.browseList = chatState.doctorList;
 
   showTypingIndicator();
   setTimeout(() => {
     hideTypingIndicator();
     appendBotMessage("Here are the closest matches we have:");
-
     doctors.forEach(doctor => {
-      chatState.selectedDoctor = doctor;
-      handlePhase('browsing_card');
+      showNoMatchCard(doctor.id);
     });
   }, 800);
 }
+
+
+// Renders a therapy card for no-match suggestions.
+// Uses bio instead of reasoning since no exact match was found.
+// Replaces Back to team with Ubuntu Healing Centre button.
+function showNoMatchCard(id) {
+  const t = chatState.browseList.find(d => d.id === id);
+  if (!t) return;
+
+  chatState.selectedDoctor = t;
+  const initials = t.first_name.charAt(0) + t.last_name.charAt(0);
+
+  appendBotMessage(
+    '<div class="bot-therapist-card">' +
+      '<div class="btc-header">' +
+        '<div class="btc-avatar">' + initials + '</div>' +
+        '<div>' +
+          '<span class="btc-name">Dr ' + t.first_name + ' ' + t.last_name + '</span>' +
+          '<span class="btc-title">' + t.title + ' \u00b7 ' + t.specialisation + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="btc-body">' +
+        '<p class="btc-bio">' + (t.bio || '') + '</p>' +
+        '<span class="btc-fee">R' + t.price + ' / session</span>' +
+        '<div class="btc-actions">' +
+          '<button class="btc-btn-book" onclick="appendUserMessage(\'Book a session\'); startBooking();">Book a session</button>' +
+          '<button class="btc-btn-back" onclick="showSisterCentreReferral()">🌿 Ubuntu Healing Centre</button>' +
+        '</div>' +
+        '<button class="btc-btn-menu" onclick="sendMessage(\'nav: main menu\')">Back to main menu</button>' +
+      '</div>' +
+    '</div>'
+  );
+}
+
 
 // Shows the Ubuntu Healing Centre referral message
 function showSisterCentreReferral() {
