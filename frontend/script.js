@@ -666,7 +666,6 @@ function handleIntakeQ7b(text) {
   }
 
   chatState.patientProfile.priorWorked = value;
-  appendUserMessage(value.length > 60 ? value.substring(0, 60) + '...' : value);
     if (preLLMGuardrail()) runLLMMatch(); //Only proceeds if all patientProfile fields are valid and doctor list is loaded.
 }
 
