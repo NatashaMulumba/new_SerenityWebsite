@@ -2184,7 +2184,7 @@ function handleFAQInput(text) {
         "<button class='menu-option' onclick='sendMessage(\"no thanks faq done\")'>✅ No thanks, I'm done</button>"
       );
       chatState.phase = 'faq_closing';
-    }, 12000);
+    }, 6000);
   }, 1000);
 }
 
