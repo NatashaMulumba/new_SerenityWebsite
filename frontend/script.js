@@ -1972,6 +1972,18 @@ function handleCrisisClosing(text) {
 }
 // function to switch between different states 
 function handlePhase(text) {
+  const lower = text.toLowerCase().trim();
+
+  // Global navigation : intercept before any phase-specific handling
+  if (lower === 'nav: main menu') {
+    resetToWelcome();
+    return;
+  }
+
+  if (lower === 'nav: back to team') {
+    handleBrowseTeam();
+    return;
+  }
   switch (chatState.phase) {
     case 'menu':
       handleMenuInput(text);
