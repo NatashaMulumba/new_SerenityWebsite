@@ -993,12 +993,13 @@ function showNoMatchDoctors() {
 // Renders a therapy card for no-match suggestions.
 // Uses bio instead of reasoning since no exact match was found.
 // Replaces Back to team with Ubuntu Healing Centre button.
-function showNoMatchCard(id) {
+function showNoMatchCard(id, reasoning) {
   const t = chatState.browseList.find(d => d.id === id);
   if (!t) return;
 
   chatState.selectedDoctor = t;
   const initials = t.first_name.charAt(0) + t.last_name.charAt(0);
+  const displayText = reasoning || t.bio || '';
 
   appendBotMessage(
     '<div class="bot-therapist-card">' +
@@ -1010,7 +1011,7 @@ function showNoMatchCard(id) {
         '</div>' +
       '</div>' +
       '<div class="btc-body">' +
-        '<p class="btc-bio">' + (t.bio || '') + '</p>' +
+        '<p class="btc-bio">' + displayText + '</p>' +
         '<span class="btc-fee">R' + t.price + ' / session</span>' +
         '<div class="btc-actions">' +
           '<button class="btc-btn-book" onclick="appendUserMessage(\'Book a session\'); startBooking();">Book a session</button>' +
@@ -1021,7 +1022,6 @@ function showNoMatchCard(id) {
     '</div>'
   );
 }
-
 
 // Shows the Ubuntu Healing Centre referral message
 function showSisterCentreReferral() {
