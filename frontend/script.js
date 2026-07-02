@@ -799,18 +799,53 @@ function handleGuardrailFailure(field) {
 }
 
 
-// replace with real Gemini implementation
+
+// Sends patientProfile and doctorList to Flask /api/match endpoint.
+// Flask assembles the prompt, calls Gemini, and returns the result.
+// Handles quota errors, network errors, and invalid JSON gracefully.
 function runLLMMatch() {
   showTypingIndicator();
-  setTimeout(() => {
+
+  fetch('http://127.0.0.1:5000/api/match', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      patientProfile: chatState.patientProfile,
+      doctorList: chatState.doctorList
+    })
+  })
+  .then(res => {
+    if (res.status === 429) throw new Error('quota_exceeded');
+    if (res.status === 503) throw new Error('network_error');
+    if (!res.ok) throw new Error('server_error');
+    return res.json();
+  })
+  .then(data => {
     hideTypingIndicator();
-    appendBotMessage("Intake complete. LLM match coming soon.");
-    console.log("patientProfile at handoff:", JSON.stringify(chatState.patientProfile, null, 2));
-  }, 800);
+    if (data.error) throw new Error(data.error);
+    handleLLMResult(data.result);
+  })
+  .catch(err => {
+    hideTypingIndicator();
+    const msg = err.message || '';
+
+    if (msg === 'quota_exceeded') {
+      appendBotMessage(
+        "SerenityBot's matching is taking a breather and our team is on it. " +
+        "In the meantime, you are welcome to browse our therapists directly or call us to find the right fit.<br><br>" +
+        "<button class='menu-option' onclick='sendMessage(\"👤 Browse the team\")'>👤 Browse the team</button>" +
+        "<button class='menu-option' onclick='sendMessage(\"nav: main menu\")'>🏠 Back to main menu</button>"
+      );
+    } else {
+      appendBotMessage(
+        "We could not complete your match right now. Please try again in a moment, " +
+        "or feel free to browse the team yourself.<br><br>" +
+        "<button class='menu-option' onclick='startIntake()'>🔄 Try again</button>" +
+        "<button class='menu-option' onclick='sendMessage(\"👤 Browse the team\")'>👤 Browse the team</button>"
+      );
+    }
+  });
 }
-
-
-
 
 
 
