@@ -1558,7 +1558,7 @@ function buildCalendarWidget() {
       const dateObj  = new Date(viewYear, viewMonth, d);
       const dateStr  = `${viewYear}-${String(viewMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
       const dayName  = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][dateObj.getDay()];
-      const isPast   = dateStr < todayStr;
+      const isPast   = dateStr <= todayStr;
       const isFuture = dateObj > maxDate;
       const isWorking = workingDays.includes(dayName);
       const disabled  = isPast || isFuture || !isWorking;
