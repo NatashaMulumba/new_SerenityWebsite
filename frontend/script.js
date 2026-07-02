@@ -630,7 +630,7 @@ function selectIntakeQ7(answer) {
     askIntakeQ7b();
   } else {
     chatState.patientProfile.priorWorked = null;
-    runGeminiMatch();
+    if (preLLMGuardrail()) runLLMMatch(); //Only proceeds if all patientProfile fields are valid and doctor list is loaded.
   }
 }
 
@@ -661,7 +661,7 @@ function handleIntakeQ7b(text) {
 
   chatState.patientProfile.priorWorked = value;
   appendUserMessage(value.length > 60 ? value.substring(0, 60) + '...' : value);
-  runGeminiMatch();
+    if (preLLMGuardrail()) runLLMMatch(); //Only proceeds if all patientProfile fields are valid and doctor list is loaded.
 }
 
 
@@ -735,6 +735,69 @@ function preLLMGuardrail() {
 
   return true;
 }
+
+//function that handles guardrail failures and prompts user to re-enter missing info
+function handleGuardrailFailure(field) {
+  showTypingIndicator();
+  setTimeout(() => {
+    hideTypingIndicator();
+
+    switch (field) {
+      case 'presentingIssue':
+        appendBotMessage("It looks like we lost your presenting issue. Let's go back to that.");
+        setTimeout(() => startIntake(), 2000);
+        break;
+
+      case 'sessionFor':
+        appendBotMessage("Something went wrong with your session selection. Let's try that again.");
+        setTimeout(() => askIntakeQ2(), 2000);
+        break;
+
+      case 'ageGroup':
+        appendBotMessage("We need your age group to find the right match. Let's go back to that.");
+        setTimeout(() => askIntakeQ3(), 2000);
+        break;
+
+      case 'language':
+        appendBotMessage("We need your language preference to continue. Let's go back to that.");
+        setTimeout(() => askIntakeQ4(), 2000);
+        break;
+
+      case 'sessionType':
+        appendBotMessage("We need your session type preference. Let's go back to that.");
+        setTimeout(() => askIntakeQ5(), 2000);
+        break;
+
+      case 'priorTherapy':
+        appendBotMessage("We need to know your therapy history. Let's go back to that.");
+        setTimeout(() => askIntakeQ7(), 2000);
+        break;
+
+      case 'doctorList':
+        appendBotMessage(
+          "We could not load our team right now. Please try again in a moment.<br><br>" +
+          "<button class='menu-option' onclick='startIntake()'>🔄 Try again</button>" +
+          "<button class='menu-option' onclick='sendMessage(\"nav: main menu\")'>🏠 Back to main menu</button>"
+        );
+        break;
+
+      default:
+        appendBotMessage(
+          "Something went wrong. Please try again.<br><br>" +
+          "<button class='menu-option' onclick='startIntake()'>🔄 Start again</button>" +
+          "<button class='menu-option' onclick='sendMessage(\"nav: main menu\")'>🏠 Back to main menu</button>"
+        );
+        break;
+    }
+  }, 600);
+}
+
+
+
+
+
+
+
 
 
 //-------------PRE-LLM -GUARDS---------------------------
