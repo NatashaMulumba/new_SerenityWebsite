@@ -964,30 +964,31 @@ function handleNoMatch(noMatchData) {
 
 // Shows the top 1 or 2 no-match doctor cards side by side
 // Shows the top 1 or 2 no-match doctor cards
-function showNoMatchDoctors() {
-  const doctors = chatState.noMatchDoctors || [];
-  if (doctors.length === 0) return;
+// DO NOT NEED TO SHOW 2 MATCHES - REMOVE LATER
+// function showNoMatchDoctors() {
+//   const doctors = chatState.noMatchDoctors || [];
+//   if (doctors.length === 0) return;
 
-  // Disable all no-match choice buttons so user cannot click them again
-  document.querySelectorAll('.no-match-choice-btn').forEach(btn => {
-    btn.disabled = true;
-    btn.style.opacity = '0.4';
-    btn.style.cursor = 'not-allowed';
-  });
+//   // Disable all no-match choice buttons so user cannot click them again
+//   document.querySelectorAll('.no-match-choice-btn').forEach(btn => {
+//     btn.disabled = true;
+//     btn.style.opacity = '0.4';
+//     btn.style.cursor = 'not-allowed';
+//   });
 
-  // Set phase and browseList before rendering cards
-  chatState.phase = 'browsing_card';
-  chatState.browseList = chatState.doctorList;
+//   // Set phase and browseList before rendering cards
+//   chatState.phase = 'browsing_card';
+//   chatState.browseList = chatState.doctorList;
 
-  showTypingIndicator();
-  setTimeout(() => {
-    hideTypingIndicator();
-    appendBotMessage("Here are the closest matches we have:");
-    doctors.forEach(doctor => {
-      showNoMatchCard(doctor.id);
-    });
-  }, 800);
-}
+//   showTypingIndicator();
+//   setTimeout(() => {
+//     hideTypingIndicator();
+//     appendBotMessage("Here are the closest matches we have:");
+//     doctors.forEach(doctor => {
+//       showNoMatchCard(doctor.id);
+//     });
+//   }, 800);
+//}
 
 
 // Renders a therapy card for no-match suggestions.
