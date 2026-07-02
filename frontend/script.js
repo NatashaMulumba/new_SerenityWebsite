@@ -1567,7 +1567,7 @@ function handlePhase(text) {
           if (oldContainer) oldContainer.remove();
         }
         appendBotMessage("Please use the dropdown below to select your preferred language.");
-        setTimeout(() => askIntakeQ4(), 800);
+        setTimeout(() => askIntakeQ4(), 2000);
         break;
       }
     case 'intake_q5':
