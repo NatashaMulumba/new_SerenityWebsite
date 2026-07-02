@@ -2183,7 +2183,7 @@ function handleFAQInput(text) {
         "<button class='menu-option' onclick='lockSiblingButtons(this); startIntake()'>🔍 No, help me find a match</button>" +
         "<button class='menu-option' onclick='lockSiblingButtons(this); resetToWelcome()'>✅ No thanks, I'm done</button>"
       );
-      chatState.phase = 'faq_closing';
+     
     }, 6000);
   }, 1000);
 }
