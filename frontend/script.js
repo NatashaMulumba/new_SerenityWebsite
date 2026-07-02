@@ -84,10 +84,21 @@ function sanitiseInput(text) {
   // CHECK 4: Gibberish detection
   const emojiOnly = /^[\p{Emoji}\s]+$/u.test(cleaned);
   const numbersOnly = /^\d+$/.test(cleaned);
-  const noVowels = !/[aeiouAEIOU]/.test(cleaned) && cleaned.length > 4;
   const repeating = /(.)\1{4,}/.test(cleaned);
 
-  if (emojiOnly || numbersOnly || noVowels || repeating) {
+  // Word-level vowel check — flag if no word in the input contains a vowel
+  // Catches keyboard mashing like "asdfghjkl zxcvbnm" which the whole-string check misses
+  const words = cleaned.trim().split(/\s+/).filter(w => w.length > 2);
+  const hasRealWord = words.some(w => /[aeiouAEIOU]/.test(w));
+  const allWordsGibberish = words.length > 0 && !hasRealWord;
+
+  // Vowel ratio check — real text has at least 15% vowels across all letters
+  const letters = cleaned.replace(/[^a-zA-Z]/g, '');
+  const vowelCount = (cleaned.match(/[aeiouAEIOU]/g) || []).length;
+  const vowelRatio = letters.length > 6 ? vowelCount / letters.length : 1;
+  const poorVowelRatio = vowelRatio < 0.15;
+
+  if (emojiOnly || numbersOnly || repeating || allWordsGibberish || poorVowelRatio) {
     return { passed: false, reason: 'gibberish' };
   }
 
