@@ -1709,7 +1709,8 @@ function writeBooking() {
       presenting:        b.presenting,
       medications:       b.medications,
       appt_date:         b.appt_date,
-      appt_time:         b.appt_time
+      appt_time:         b.appt_time,
+      session_type:      chatState.patientProfile.sessionType === 'Online' ? 'Online' : 'In-person'
     })
   })
   .then(res => res.json())
@@ -1733,8 +1734,10 @@ function writeBooking() {
         <div class="bcc-note">
           Your session with <strong>${doctorName}</strong> is confirmed for
           <strong>${formatCalDate(b.appt_date)} at ${b.appt_time}</strong>.<br><br>
-          A confirmation email has been sent to ${b.patient_email}. Payment and medical aid details will be handled on arrival.,
-          30–45 minutes before your first session. Please bring your ID and medical aid card.
+          A confirmation email has been sent to ${b.patient_email}. 
+          ${chatState.patientProfile.sessionType === 'Online' 
+            ? 'Our receptionist Cleo will be in contact with you before your session with a secure video link and any details you need.' 
+            : 'Please arrive 30 to 45 minutes early to complete your intake forms and arrange payment and medical aid. Bring your ID and medical aid card.'}
         </div>
       </div>
     `;
