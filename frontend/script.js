@@ -388,6 +388,12 @@ function startIntake() {
           placeholder="e.g. I've been feeling anxious at work and struggling to sleep..."
           oninput="intakePresentingCount(this)"
         ></textarea>
+        <div id="intake-presenting-error" style="
+          font-size: 0.78rem;
+          color: #c0392b;
+          min-height: 18px;
+          padding: 4px 0 0 2px;
+        "></div>
         <div class="presenting-footer">
           <span class="presenting-counter" id="intake-presenting-counter">300 characters remaining</span>
           <button class="presenting-submit" onclick="intakePresentingSubmit()">Continue →</button>
