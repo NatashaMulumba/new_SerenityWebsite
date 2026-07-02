@@ -129,15 +129,27 @@ def build_match_prompt(patient_profile, doctor_list):
     "gap_reason": null
     }}
 
+
     If no suitable match exists:
     {{
     "match": null,
     "no_match": {{
-        "top_ids": [<id>, <id>],
+        "top_doctors": [
+        {{
+            "doctor_id": <number>,
+            "reasoning": "<1-2 sentences explaining why this doctor suits the user despite the gap. Use you and your. Never use the patient or the client.>"
+        }},
+        {{
+            "doctor_id": <number>,
+            "reasoning": "<1-2 sentences explaining why this doctor suits the user despite the gap. Use you and your. Never use the patient or the client.>"
+        }}
+        ],
         "gap_reason": "<specific preference that could not be met>"
     }},
     "gap_reason": "<same as above>"
     }}"""
+
+   
 
     return prompt
 # Allow genai to use API key from .env file
@@ -189,13 +201,12 @@ def match_therapist_mock():
     # Current scenario: Test Case 1 — Individual, exact match
     mock_result = {
     "result": {
-        "match": {
-            "doctor_id": 2,
-            "reasoning": "Dr Serenity Wells specialises in grief and depression, speaks Zulu, offers in-person sessions, and uses person-centred and interpersonal approaches that align with the patient's preference for deeper exploratory work over structured CBT.",
-            "confidence": 94
+        "match": None,
+        "no_match": {
+            "top_ids": [4, 5],
+            "gap_reason": "language: Sesotho"
         },
-        "no_match": None,
-        "gap_reason": None
+        "gap_reason": "language: Sesotho"
     }
 }
 
