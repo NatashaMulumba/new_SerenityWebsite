@@ -891,6 +891,88 @@ function handleLLMResult(result) {
   }
 }
 
+// Handles the case where Gemini could not find a perfect match.
+// Shows top 1 or 2 closest doctors with a warm explanation, or offers sister centre referral.
+function handleNoMatch(noMatchData) {
+  const gap = noMatchData.gap_reason || 'one of your preferences';
+  const topIds = noMatchData.top_ids || [];
+
+  // Look up the top doctors from the DB list
+  const topDoctors = topIds
+    .map(id => chatState.doctorList.find(d => d.id === id))
+    .filter(Boolean);
+
+  showTypingIndicator();
+  setTimeout(() => {
+    hideTypingIndicator();
+
+    const count = topDoctors.length;
+    const suggestion = count === 1
+      ? "the therapist who would be the best fit in every other way"
+      : "the two therapists who would be the best fit in every other way";
+
+    appendBotMessage(
+      `Unfortunately we do not currently have a therapist who meets your preference for ${gap}. ` +
+      `Can we suggest ${suggestion}, or would you prefer we connect you with our sister centre ` +
+      `to find someone who does?`
+    );
+
+    setTimeout(() => {
+      let buttons = '';
+      if (count >= 1) {
+        buttons += `<button class='menu-option' onclick='showNoMatchDoctors()'>👤 See suggested therapists</button>`;
+      }
+      buttons += `<button class='menu-option' onclick='showSisterCentreReferral()'>🌿 Connect with Ubuntu Healing Centre</button>`;
+      buttons += `<button class='menu-option' onclick='sendMessage(\"nav: main menu\")'>🏠 Back to main menu</button>`;
+
+      appendBotMessage(buttons);
+
+      // Store top doctors for the show function
+      chatState.noMatchDoctors = topDoctors;
+    }, 600);
+
+  }, 800);
+}
+
+
+// Shows the top 1 or 2 no-match doctor cards side by side
+function showNoMatchDoctors() {
+  const doctors = chatState.noMatchDoctors || [];
+  if (doctors.length === 0) return;
+
+  showTypingIndicator();
+  setTimeout(() => {
+    hideTypingIndicator();
+    appendBotMessage("Here are the closest matches we have:");
+
+    doctors.forEach(doctor => {
+      chatState.selectedDoctor = doctor;
+      handlePhase('browsing_card');
+    });
+  }, 800);
+}
+
+// Shows the Ubuntu Healing Centre referral message
+function showSisterCentreReferral() {
+  showTypingIndicator();
+  setTimeout(() => {
+    hideTypingIndicator();
+    appendBotMessage(
+      "We want to make sure you find exactly the right support. " +
+      "Our sister centre, <strong>Ubuntu Healing Centre</strong> in Pretoria, has a wider network " +
+      "of specialists and may be able to connect you with a therapist who meets your needs.<br><br>" +
+      "<strong>Phone:</strong> 012 345 6789<br>" +
+      "<strong>Website:</strong> ubuntuhealingcentre.co.za<br>" +
+      "<strong>Address:</strong> 12 Jacaranda Avenue, Pretoria<br><br>" +
+      "They will take good care of you.<br><br>" +
+      "<button class='menu-option' onclick='sendMessage(\"nav: main menu\")'>🏠 Back to main menu</button>"
+    );
+  }, 800);
+}
+
+
+
+
 //-------------PRE-LLM -GUARDS---------------------------
 
 
