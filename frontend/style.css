@@ -1179,17 +1179,22 @@ footer {
 }
  /*back to menu styling */
 .btc-btn-menu {
-  background: var(--white);
-  color: var(--ink);
-  border: 1px solid var(--green);
-  border-radius: 8px;
-  padding: 9px 12px;
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 10px 16px;
+  background: transparent;
+  border: 1.5px solid var(--green);
+  border-radius: 20px;
+  color: var(--green-deep);
   font-family: var(--font-body);
   font-size: 0.85rem;
+  font-weight: 500;
   cursor: pointer;
-  margin-top: 8px;
-  width: 100%;
+  text-align: center;
+  transition: background 0.2s, color 0.2s;
 }
+
 .btc-btn-menu:hover {
   background: var(--green);
   color: var(--white);
