@@ -675,6 +675,70 @@ function handleIntakeQ7b(text) {
 // ----------- BOOKING FLOW -----------------
 
 
+//-------------PRE-LLM -GUARDS---------------------------
+
+// function that checks the patient profile for required fields before sending to LLM
+function preLLMGuardrail() {
+  const p = chatState.patientProfile;
+
+  // 1. Presenting issue
+  if (!p.presentingIssue || p.presentingIssue.trim().length < 10) {
+    handleGuardrailFailure('presentingIssue');
+    return false;
+  }
+
+  // 2. Session for
+  const validSessionFor = ['Individual', 'Couples', 'Family', 'Group'];
+  if (!p.sessionFor || !validSessionFor.includes(p.sessionFor)) {
+    handleGuardrailFailure('sessionFor');
+    return false;
+  }
+
+  // 3. Age group — only required for Individual
+  if (p.sessionFor === 'Individual') {
+    const validAgeGroups = ['Child/Teen', 'Adult', 'Elder'];
+    if (!p.ageGroup || !validAgeGroups.includes(p.ageGroup)) {
+      handleGuardrailFailure('ageGroup');
+      return false;
+    }
+  }
+
+  // 4. Language
+  const validLanguages = [
+    'Afrikaans', 'English', 'French', 'Mandarin', 'Northern Sotho',
+    'Ndebele', 'Portuguese', 'Sesotho', 'Spanish', 'Swahili',
+    'Swati', 'Tamil', 'Tsonga', 'Tswana', 'Vietnamese', 'Xhosa', 'Zulu'
+  ];
+  if (!p.language || !validLanguages.includes(p.language)) {
+    handleGuardrailFailure('language');
+    return false;
+  }
+
+  // 5. Session type
+  const validSessionTypes = ['Online', 'In-person', 'No preference'];
+  if (!p.sessionType || !validSessionTypes.includes(p.sessionType)) {
+    handleGuardrailFailure('sessionType');
+    return false;
+  }
+
+  // 6. Prior therapy
+  if (!p.priorTherapy || !['Yes', 'No'].includes(p.priorTherapy)) {
+    handleGuardrailFailure('priorTherapy');
+    return false;
+  }
+
+  // 7. Doctor list loaded and non-empty
+  if (!chatState.doctorList || chatState.doctorList.length === 0) {
+    handleGuardrailFailure('doctorList');
+    return false;
+  }
+
+  return true;
+}
+
+
+//-------------PRE-LLM -GUARDS---------------------------
+
 
 
 
