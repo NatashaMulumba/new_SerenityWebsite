@@ -1035,8 +1035,8 @@ function handleNoMatch(noMatchData) {
 //}
 
 
-// Renders a therapy card for no-match suggestions.
-// Uses bio instead of reasoning since no exact match was found.
+// Renders a therapy card for a no-match suggestion.
+// Shows LLM reasoning acknowledging the gap.
 // Replaces Back to team with Ubuntu Healing Centre button.
 function showNoMatchCard(id, reasoning) {
   const t = chatState.browseList.find(d => d.id === id);
@@ -1047,26 +1047,28 @@ function showNoMatchCard(id, reasoning) {
   const displayText = reasoning || t.bio || '';
 
   appendBotMessage(
-    '<div class="bot-therapist-card">' +
-      '<div class="btc-header">' +
-        '<div class="btc-avatar">' + initials + '</div>' +
-        '<div>' +
-          '<span class="btc-name">Dr ' + t.first_name + ' ' + t.last_name + '</span>' +
-          '<span class="btc-title">' + t.title + ' \u00b7 ' + t.specialisation + '</span>' +
-        '</div>' +
-      '</div>' +
-      '<div class="btc-body">' +
-        '<p class="btc-bio">' + displayText + '</p>' +
-        '<span class="btc-fee">R' + t.price + ' / session</span>' +
-        '<div class="btc-actions">' +
-          '<button class="btc-btn-book" onclick="appendUserMessage(\'Book a session\'); startBooking();">Book a session</button>' +
-          '<button class="btc-btn-back" onclick="showSisterCentreReferral()">🌿 Ubuntu Healing Centre</button>' +
-        '</div>' +
-        '<button class="btc-btn-menu" onclick="sendMessage(\'nav: main menu\')">Back to main menu</button>' +
-      '</div>' +
-    '</div>'
+    `<div class="bot-therapist-card">
+      <div class="btc-header">
+        <div class="btc-avatar">${initials}</div>
+        <div>
+          <span class="btc-name">Dr ${t.first_name} ${t.last_name}</span>
+          <span class="btc-title">${t.title} · ${t.specialisation}</span>
+        </div>
+      </div>
+      <div class="btc-body">
+        <p class="btc-bio">${displayText}</p>
+        <span class="btc-fee">R${t.price} / session</span>
+        <div class="btc-actions">
+          <button class="btc-btn-book" onclick="lockSiblingButtons(this); appendUserMessage('Book a session'); startBooking();">Book a session</button>
+          <button class="btc-btn-back" onclick="lockSiblingButtons(this); showSisterCentreReferral();">🌿 Ubuntu Healing Centre</button>
+        </div>
+        <button class="btc-btn-menu" onclick="lockSiblingButtons(this); sendMessage('nav: main menu')">Back to main menu</button>
+      </div>
+    </div>`
   );
 }
+
+
 
 // Shows the Ubuntu Healing Centre referral message
 function showSisterCentreReferral() {
