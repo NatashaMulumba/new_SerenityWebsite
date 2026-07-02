@@ -847,7 +847,49 @@ function runLLMMatch() {
   });
 }
 
+// Receives the parsed Gemini result object.
+// Routes to browsing_card on a good match, or no-match flow otherwise.
+function handleLLMResult(result) {
+  if (result.match && result.match.doctor_id) {
+    const doctor = chatState.doctorList.find(d => d.id === result.match.doctor_id);
 
+    if (!doctor) {
+      // doctor_id returned by Gemini does not exist in DB — post-LLM guardrail
+      appendBotMessage(
+        "We found a potential match but could not verify the details. " +
+        "Please browse our team directly or try again.<br><br>" +
+        "<button class='menu-option' onclick='startIntake()'>🔄 Try again</button>" +
+        "<button class='menu-option' onclick='sendMessage(\"👤 Browse the team\")'>👤 Browse the team</button>"
+      );
+      return;
+    }
+
+    // Valid match found — set selectedDoctor and route to browsing_card
+    chatState.selectedDoctor = doctor;
+
+    showTypingIndicator();
+    setTimeout(() => {
+      hideTypingIndicator();
+      appendBotMessage(
+        "Based on what you have shared, here is your recommended match:"
+      );
+      setTimeout(() => {
+        handlePhase('browsing_card');
+      }, 600);
+    }, 800);
+
+  } else if (result.no_match) {
+    // No perfect match — show no-match flow
+    handleNoMatch(result.no_match);
+  } else {
+    // Unexpected response structure
+    appendBotMessage(
+      "Something unexpected happened with your match. Please try again.<br><br>" +
+      "<button class='menu-option' onclick='startIntake()'>🔄 Try again</button>" +
+      "<button class='menu-option' onclick='sendMessage(\"nav: main menu\")'>🏠 Back to main menu</button>"
+    );
+  }
+}
 
 //-------------PRE-LLM -GUARDS---------------------------
 
