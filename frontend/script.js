@@ -892,8 +892,9 @@ function handleLLMResult(result) {
       return;
     }
 
-    // Valid match found — set selectedDoctor and route to browsing_card
+    // Valid match found : set selectedDoctor and route to browsing_card
     chatState.selectedDoctor = doctor;
+    chatState.matchReasoning = result.match.reasoning;
 
     showTypingIndicator();
     setTimeout(() => {
@@ -905,7 +906,7 @@ function handleLLMResult(result) {
         // Make doctorList available to showTherapistCard which reads from browseList
         chatState.browseList = chatState.doctorList;
         chatState.phase = 'browsing_card';
-        showTherapistCard(chatState.selectedDoctor.id);
+        showTherapistCard(chatState.selectedDoctor.id, true);
       }, 600);
     }, 800);
 
@@ -1761,7 +1762,7 @@ function writeBooking() {
  
 
 // Render the full detail card for the selected therapist
-function showTherapistCard(id) {
+function showTherapistCard(id, showReasoning=false) {
   const t = chatState.browseList.find(d => d.id === id);
   if (!t) return;
 
@@ -1779,7 +1780,7 @@ function showTherapistCard(id) {
         </div>
       </div>
       <div class="btc-body">
-        <p class="btc-bio">${t.bio}</p>
+        <p class="btc-bio">${showReasoning && chatState.matchReasoning ? chatState.matchReasoning : t.bio}</p>
         <span class="btc-fee"> R${t.price} / session</span>
         <div class="btc-actions">
           <button class="btc-btn-book" onclick="appendUserMessage('Book a session'); startBooking();">Book a session</button>
