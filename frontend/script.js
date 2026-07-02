@@ -26,12 +26,21 @@ const chatState = {
   }
 };
 
-const crisisKeywords = [
-    'suicide', 'suicidal', 'kill myself', 'end my life', 'end it all',
-    'self-harm', 'self harm', 'hurt myself', 'cut myself',
-    'don\'t want to be here', 'dont want to be here',
-    'no reason to live', 'want to die', 'better off dead'
-  ];
+const CRISIS_KEYWORDS = [
+  'suicide', 'suicidal',
+  'kill myself', 'killing myself',
+  'end my life', 'ending my life',
+  'end it all',
+  'self-harm', 'self harm',
+  'hurt myself', 'hurting myself',
+  'cut myself', 'cutting myself',
+  'don\'t want to be here', 'dont want to be here',
+  'no reason to live',
+  'want to die', 'wanted to die', 'wanting to die',
+  'better off dead',
+  'take my life', 'taking my life',
+  'not want to live', 'don\'t want to live'
+];
 
 // this function checks four 4 checks: crisis words, prompt injection, PII strip, gibberish detection
 function sanitiseInput(text) {
