@@ -903,7 +903,10 @@ function handleLLMResult(result) {
         "Based on what you have shared, here is your recommended match:"
       );
       setTimeout(() => {
-        handlePhase('browsing_card');
+        // Make doctorList available to showTherapistCard which reads from browseList
+        chatState.browseList = chatState.doctorList;
+        chatState.phase = 'browsing_card';
+        showTherapistCard(chatState.selectedDoctor.id);
       }, 600);
     }, 800);
 
