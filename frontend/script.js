@@ -1561,7 +1561,22 @@ function handlePhase(text) {
       appendBotMessage("Please tap an age group above to continue.");
       break;
     case 'intake_q4':
-      appendBotMessage("Please use the dropdown above to select your preferred language.");
+      // Disable the old dropdown so user cannot interact with it
+      const oldSelect = document.getElementById('intake-language-select');
+      if (oldSelect) {
+        oldSelect.disabled = true;
+        oldSelect.style.opacity = '0.4';
+        oldSelect.style.cursor = 'not-allowed';
+        // Also disable the Continue button next to it
+        const oldBtn = oldSelect.closest('.intake-dropdown-widget')?.querySelector('button');
+        if (oldBtn) {
+          oldBtn.disabled = true;
+          oldBtn.style.opacity = '0.4';
+          oldBtn.style.cursor = 'not-allowed';
+        }
+      }
+      appendBotMessage("Please use the dropdown below to select your preferred language.");
+      setTimeout(() => askIntakeQ4(), 800);
       break;
     case 'intake_q5':
       appendBotMessage("Please tap your session preference above to continue.");
