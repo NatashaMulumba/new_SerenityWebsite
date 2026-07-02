@@ -1083,7 +1083,7 @@ function showSisterCentreReferral() {
       "<strong>Website:</strong> ubuntuhealingcentre.co.za<br>" +
       "<strong>Address:</strong> 12 Jacaranda Avenue, Pretoria<br><br>" +
       "They will take good care of you.<br><br>" +
-      "<button class='menu-option' onclick='sendMessage(\"nav: main menu\")'>🏠 Back to main menu</button>"
+      "<button class='btc-btn-menu' onclick='sendMessage(\"nav: main menu\")'>🏠 Back to main menu</button>"
     );
   }, 800);
 }
