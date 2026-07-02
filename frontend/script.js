@@ -1535,7 +1535,7 @@ function buildCalendarWidget() {
     const daysInMonth  = new Date(viewYear, viewMonth + 1, 0).getDate();
 
     // Cut-off: today is the earliest bookable date
-    const todayStr = today.toISOString().split('T')[0];
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
 
     // 8-week limit from today
     const maxDate = new Date(today);
