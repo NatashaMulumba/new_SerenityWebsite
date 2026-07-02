@@ -935,19 +935,30 @@ function handleNoMatch(noMatchData) {
   setTimeout(() => {
     hideTypingIndicator();
 
-    appendBotMessage(
-      "Unfortunately we do not currently have a therapist who meets your preference for " + gap + ". " +
-      "Here is our closest match in every other way."
-    );
+    // Build gap message — if language-related, name the languages the suggested doctor speaks
+    let gapMessage = "Unfortunately we do not currently have a therapist who meets your preference for " + gap + ".";
+    if (gap.toLowerCase().includes('language') && doctor) {
+      gapMessage += " Our closest match, Dr " + doctor.first_name + " " + doctor.last_name +
+        ", conducts sessions in " + doctor.language + ".";
+    }
+    appendBotMessage(gapMessage);
 
     setTimeout(() => {
       if (doctor) {
-        // Attach the no-match reasoning to the doctor object
-        const doctorWithReasoning = { ...doctor, matchReasoning: noMatchData.reasoning };
-        chatState.noMatchDoctor = doctorWithReasoning;
+        chatState.noMatchDoctor = { ...doctor, matchReasoning: noMatchData.reasoning };
         chatState.phase = 'browsing_card';
         chatState.browseList = chatState.doctorList;
-        showNoMatchCard(doctor.id, noMatchData.reasoning);
+
+        appendBotMessage(
+          "If this is non-negotiable for you, tap <strong>Ubuntu Healing Centre</strong> " +
+          "on the card below and we will connect you with our sister centre who may have exactly who you need. " +
+          "Otherwise, here is our closest match in every other way:"
+        );
+
+        setTimeout(() => {
+          showNoMatchCard(doctor.id, noMatchData.reasoning);
+        }, 800);
+
       } else {
         // Doctor ID returned by Gemini does not exist in DB
         appendBotMessage(
@@ -956,9 +967,10 @@ function handleNoMatch(noMatchData) {
           "<button class='menu-option' onclick='showSisterCentreReferral()'>🌿 Ubuntu Healing Centre</button>"
         );
       }
+
     }, 1000);
 
-  }, 1000);
+  }, 800);
 }
 
 
