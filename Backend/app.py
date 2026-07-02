@@ -90,7 +90,7 @@ def build_match_prompt(patient_profile, doctor_list):
     - You may ONLY recommend a therapist whose ID appears in the THERAPIST LIST below.
     - Do NOT invent names, specialisations, languages, or any other attributes.
     - If the presenting issue is incoherent or does not describe a real human experience, return a no_match result with gap_reason: "incoherent_input".
-    - If no therapist meets the hard filter criteria, return a no_match result with the specific gap named.
+    - If no therapist meets all hard filter criteria, return a no_match result with the single closest alternative doctor, the specific gap named, and a personalised reasoning explaining why this doctor is the best available option despite the gap.
     - Write the reasoning field in second person directed at the user. Use "you" and "your". Never use "the patient", "the client", or any third-person reference to the user.
 
     PATIENT PROFILE:
@@ -134,17 +134,9 @@ def build_match_prompt(patient_profile, doctor_list):
     {{
     "match": null,
     "no_match": {{
-        "top_doctors": [
-        {{
-            "doctor_id": <number>,
-            "reasoning": "<1-2 sentences explaining why this doctor suits the user despite the gap. Use you and your. Never use the patient or the client.>"
-        }},
-        {{
-            "doctor_id": <number>,
-            "reasoning": "<1-2 sentences explaining why this doctor suits the user despite the gap. Use you and your. Never use the patient or the client.>"
-        }}
-        ],
-        "gap_reason": "<specific preference that could not be met>"
+        "doctor_id": <number>,
+        "reasoning": "<1-2 sentences directed to the user using you and your. Acknowledge the unmet preference honestly, then explain why this doctor is the closest fit in every other way.>",
+        "gap_reason": "<specific preference that could not be met, e.g. language: Yoruba>"
     }},
     "gap_reason": "<same as above>"
     }}"""
