@@ -2179,9 +2179,9 @@ function handleFAQInput(text) {
     setTimeout(() => {
       appendBotMessage(
         "Do you have another question?<br><br>" +
-        "<button class='menu-option' onclick='sendMessage(\"yes another question\")'>❓ Yes, another question</button>" +
-        "<button class='menu-option' onclick='sendMessage(\"no find match\")'>🔍 No, help me find a match</button>" +
-        "<button class='menu-option' onclick='sendMessage(\"no thanks faq done\")'>✅ No thanks, I'm done</button>"
+        "<button class='menu-option' onclick='lockSiblingButtons(this); handleFAQ()'>❓ Yes, another question</button>" +
+        "<button class='menu-option' onclick='lockSiblingButtons(this); startIntake()'>🔍 No, help me find a match</button>" +
+        "<button class='menu-option' onclick='lockSiblingButtons(this); resetToWelcome()'>✅ No thanks, I'm done</button>"
       );
       chatState.phase = 'faq_closing';
     }, 6000);
