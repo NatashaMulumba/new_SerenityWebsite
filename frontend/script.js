@@ -1321,7 +1321,27 @@ function handleBookingInput(text) {
     return;
   }
 
-  // Validate before storing
+  // Run sanitiseInput on free text fields before validating
+  const freeTextSteps = [0, 4, 5, 8, 9, 10];
+  if (freeTextSteps.includes(step)) {
+    const sanitised = sanitiseInput(trimmed);
+    if (!sanitised.passed) {
+      if (sanitised.reason === 'crisis') {
+        chatState.crisisDetected = true;
+        chatState.phase = 'crisis';
+        handleCrisis();
+        return;
+      }
+      showTypingIndicator();
+      setTimeout(() => {
+        hideTypingIndicator();
+        appendBotMessage("That does not look like a valid response. Please try again in your own words.");
+      }, 500);
+      return;
+    }
+  }
+
+  // Validate format before storing
   const error = validateBookingInput(step, trimmed);
   if (error) {
     showTypingIndicator();
@@ -1329,7 +1349,7 @@ function handleBookingInput(text) {
       hideTypingIndicator();
       appendBotMessage(` ${error}`);
     }, 500);
-    return; // stay on same step
+    return;
   }
 
   // Store the validated answer
