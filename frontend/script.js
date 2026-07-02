@@ -924,46 +924,41 @@ function handleLLMResult(result) {
 }
 
 // Handles the case where Gemini could not find a perfect match.
-// Shows top 1 or 2 closest doctors with a warm explanation, or offers sister centre referral.
+// Shows the next best closest doctors with a warm explanation, or offers sister centre referral.
 function handleNoMatch(noMatchData) {
   const gap = noMatchData.gap_reason || 'one of your preferences';
-  const topIds = noMatchData.top_ids || [];
 
-  // Look up the top doctors from the DB list
-  const topDoctors = topIds
-    .map(id => chatState.doctorList.find(d => d.id === id))
-    .filter(Boolean);
+  // Look up the single closest doctor from the DB list
+  const doctor = chatState.doctorList.find(d => d.id === noMatchData.doctor_id);
 
   showTypingIndicator();
   setTimeout(() => {
     hideTypingIndicator();
 
-    const count = topDoctors.length;
-    const suggestion = count === 1
-      ? "the therapist who would be the best fit in every other way"
-      : "the two therapists who would be the best fit in every other way";
-
     appendBotMessage(
-      `Unfortunately we do not currently have a therapist who meets your preference for ${gap}. ` +
-      `Can we suggest ${suggestion}, or would you prefer we connect you with our sister centre ` +
-      `to find someone who does?`
+      "Unfortunately we do not currently have a therapist who meets your preference for " + gap + ". " +
+      "Here is our closest match in every other way."
     );
 
     setTimeout(() => {
-      let buttons = '';
-      if (count >= 1) {
-        buttons += "<button class='menu-option no-match-choice-btn' onclick='showNoMatchDoctors()'>👤 See suggested therapists</button>";
+      if (doctor) {
+        // Attach the no-match reasoning to the doctor object
+        const doctorWithReasoning = { ...doctor, matchReasoning: noMatchData.reasoning };
+        chatState.noMatchDoctor = doctorWithReasoning;
+        chatState.phase = 'browsing_card';
+        chatState.browseList = chatState.doctorList;
+        showNoMatchCard(doctor.id, noMatchData.reasoning);
+      } else {
+        // Doctor ID returned by Gemini does not exist in DB
+        appendBotMessage(
+          "We could not verify the suggested match. Please browse our team directly or contact us.<br><br>" +
+          "<button class='menu-option' onclick='sendMessage(\"👤 Browse the team\")'>👤 Browse the team</button>" +
+          "<button class='menu-option' onclick='showSisterCentreReferral()'>🌿 Ubuntu Healing Centre</button>"
+        );
       }
-      buttons += "<button class='menu-option no-match-choice-btn' onclick='showSisterCentreReferral()'>🌿 Connect with Ubuntu Healing Centre</button>";
-      buttons += "<button class='menu-option no-match-choice-btn' onclick='sendMessage(\"nav: main menu\")'>🏠 Back to main menu</button>";
-
-      appendBotMessage(buttons);
-
-      // Store top doctors for the show function
-      chatState.noMatchDoctors = topDoctors;
     }, 1000);
 
-  }, 2000);
+  }, 1000);
 }
 
 
