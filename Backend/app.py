@@ -144,7 +144,7 @@ def build_match_prompt(patient_profile, doctor_list):
     "no_match": {{
         "doctor_id": <number>,
         "reasoning": "<1-2 sentences directed to the user using you and your. Acknowledge the unmet preference honestly, then explain why this doctor is the closest fit in every other way.>",
-        "gap_reason": "<specific preference that could not be met, e.g. language: Yoruba>"
+        "gap_reason": "<full natural sentence describing what could not be met together, e.g. no therapist at Serenity speaks Zulu and specialises in anxiety>"
     }},
     "gap_reason": "<same as above>"
     }}"""
