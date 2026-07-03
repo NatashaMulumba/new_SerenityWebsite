@@ -891,64 +891,49 @@ function runLLMMatch() {
 }
 
 
-//-----------------------------MOCK FUNCTION FOR PROMPT PREVIEW----------------
-// Call this from the browser console after completing intake
-// to preview the exact prompt that will be sent to Gemini
-// previewPrompt()
-function previewPrompt() {
-  fetch('http://127.0.0.1:5000/api/match/prompt-preview', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      patientProfile: chatState.patientProfile,
-      doctorList: chatState.doctorList
-    })
-  })
-  .then(res => res.json())
-  .then(data => {
-    console.log('=== ASSEMBLED PROMPT ===');
-    console.log(data.prompt);
-    console.log('=== END PROMPT ===');
-  })
-  .catch(err => console.error('Prompt preview failed:', err));
-}
-
-
-//-----------------------------MOCK FUNCTION FOR PROMPT PREVIEW----------------
-
-
-
-
 // Receives the parsed Gemini result object.
-// Routes to browsing_card on a good match, or no-match flow otherwise.
+// Runs post-LLM guardrail before routing to card or no-match flow.
 function handleLLMResult(result) {
-  if (result.match && result.match.doctor_id) {
-    const doctor = chatState.doctorList.find(d => d.id === result.match.doctor_id);
 
-    if (!doctor) {
-      // doctor_id returned by Gemini does not exist in DB — post-LLM guardrail
-      appendBotMessage(
-        "We found a potential match but could not verify the details. " +
-        "Please browse our team directly or try again.<br><br>" +
-        "<button class='menu-option' onclick='startIntake()'>🔄 Try again</button>" +
-        "<button class='menu-option' onclick='sendMessage(\"👤 Browse the team\")'>👤 Browse the team</button>"
-      );
+  // Run postLLMGuardrail first : replaces the old inline !doctor check.
+  const guardrail = postLLMGuardrail(result);
+
+  if (!guardrail.passed) {
+    console.warn('Post-LLM guardrail failed:', guardrail.reason);
+
+    //Low confidence gets its own message: not a system error,
+   if (guardrail.reason === 'low_confidence') {
+      handleNoMatch({
+        doctor_id: result.match.doctor_id,
+        reasoning: result.match.reasoning,
+        gap_reason: "perfectly matches all of your preferences"
+      });
       return;
     }
 
-    // Valid match found : set selectedDoctor and route to browsing_card
+    // All other guardrail failures use the generic fallback.
+    appendBotMessage(
+      "We could not verify your match result. Please try again or browse our team directly.<br><br>" +
+      "<button class='menu-option' onclick='lockSiblingButtons(this); startIntake()'>🔄 Try again</button>" +
+      "<button class='menu-option' onclick='lockSiblingButtons(this); sendMessage(\"👤 Browse the team\")'>👤 Browse the team</button>"
+    );
+    return;
+  }
+
+  // guardrail.doctor comes from postLLMGuardrail 
+  if (result.match) {
+    const doctor = guardrail.doctor;
+
     chatState.selectedDoctor = doctor;
-    chatState.fromMatch = true; // Flag to show which path called the card
-    chatState.matchReasoning = result.match.reasoning;
+    chatState.fromMatch = true;
+    // Use reasoning only if it passed the toxicity check.
+    chatState.matchReasoning = result.match.reasoning || null;
 
     showTypingIndicator();
     setTimeout(() => {
       hideTypingIndicator();
-      appendBotMessage(
-        "Based on what you have shared, here is your recommended match:"
-      );
+      appendBotMessage("Based on what you have shared, here is your recommended match:");
       setTimeout(() => {
-        // Make doctorList available to showTherapistCard which reads from browseList
         chatState.browseList = chatState.doctorList;
         chatState.phase = 'browsing_card';
         showTherapistCard(chatState.selectedDoctor.id, true);
@@ -956,19 +941,15 @@ function handleLLMResult(result) {
     }, 800);
 
   } else if (result.no_match) {
-    // No perfect match — show no-match flow
+    // fromMatch set here too 
+    chatState.fromMatch = true;
     handleNoMatch(result.no_match);
-  } else {
-    // Unexpected response structure
-    appendBotMessage(
-      "Something unexpected happened with your match. Please try again.<br><br>" +
-      "<button class='menu-option' onclick='startIntake()'>🔄 Try again</button>" +
-      "<button class='menu-option' onclick='sendMessage(\"nav: main menu\")'>🏠 Back to main menu</button>"
-    );
   }
 }
 
-// Handles the case where Gemini could not find a perfect match.
+
+
+// Handles the case where LLM could not find a perfect match.
 // Shows the next best closest doctors with a warm explanation, or offers sister centre referral.
 function handleNoMatch(noMatchData) {
   const gap = noMatchData.gap_reason || 'one of your preferences';
@@ -980,7 +961,7 @@ function handleNoMatch(noMatchData) {
   setTimeout(() => {
     hideTypingIndicator();
 
-    // Build gap message — if language-related, name the languages the suggested doctor speaks
+    // Build gap message 
     let gapMessage = "We were not able to find a therapist who  " + gap + ".";
     if (gap.toLowerCase().includes('language') && doctor) {
       gapMessage += " Our closest match, Dr " + doctor.first_name + " " + doctor.last_name +
@@ -1019,34 +1000,6 @@ function handleNoMatch(noMatchData) {
   }, 800);
 }
 
-
-// Shows the top 1 or 2 no-match doctor cards side by side
-// Shows the top 1 or 2 no-match doctor cards
-// DO NOT NEED TO SHOW 2 MATCHES - REMOVE LATER
-// function showNoMatchDoctors() {
-//   const doctors = chatState.noMatchDoctors || [];
-//   if (doctors.length === 0) return;
-
-//   // Disable all no-match choice buttons so user cannot click them again
-//   document.querySelectorAll('.no-match-choice-btn').forEach(btn => {
-//     btn.disabled = true;
-//     btn.style.opacity = '0.4';
-//     btn.style.cursor = 'not-allowed';
-//   });
-
-//   // Set phase and browseList before rendering cards
-//   chatState.phase = 'browsing_card';
-//   chatState.browseList = chatState.doctorList;
-
-//   showTypingIndicator();
-//   setTimeout(() => {
-//     hideTypingIndicator();
-//     appendBotMessage("Here are the closest matches we have:");
-//     doctors.forEach(doctor => {
-//       showNoMatchCard(doctor.id);
-//     });
-//   }, 800);
-//}
 
 
 // Renders a therapy card for a no-match suggestion.
@@ -1108,12 +1061,122 @@ function showSisterCentreReferral() {
 //-------------PRE-LLM -GUARDS---------------------------
 
 
+//--------------- POST-LLM GUARDRAIL : validates LLM response before display----------
+
+function postLLMGuardrail(result) {
+
+  // MATCH PATH
+  if (result.match) {
+    const m = result.match;
+
+    // Check 1: doctor_id must be a number
+    if (!m.doctor_id || typeof m.doctor_id !== 'number') {
+      console.warn('Post-LLM guardrail: doctor_id missing or not a number', m);
+      return { passed: false, reason: 'invalid_id' };
+    }
+
+    // Check 2: doctor_id must exist in DB list — hallucination detection
+    const doctor = chatState.doctorList.find(d => d.id === m.doctor_id);
+    if (!doctor) {
+      console.warn('Post-LLM guardrail: doctor_id not found in DB list', m.doctor_id);
+      return { passed: false, reason: 'hallucinated_id' };
+    }
+
+    // Check 3: confidence floor — below 60 is not a confident match
+    if (typeof m.confidence !== 'number' || m.confidence < 60 || m.confidence > 100) {
+      console.warn('Post-LLM guardrail: confidence out of bounds or too low', m.confidence);
+      return { passed: false, reason: 'low_confidence' };
+    }
+
+    // Check 4: reasoning must be a non-empty string
+    if (!m.reasoning || typeof m.reasoning !== 'string' || m.reasoning.trim().length === 0) {
+      console.warn('Post-LLM guardrail: reasoning is empty', m);
+      return { passed: false, reason: 'empty_reasoning' };
+    }
+
+    // Check 5: toxicity check on reasoning text
+    const reasoningCheck = sanitiseInput(m.reasoning);
+    if (!reasoningCheck.passed && reasoningCheck.reason !== 'gibberish') {
+      // Crisis or injection detected in reasoning — discard reasoning, use bio instead
+      console.warn('Post-LLM guardrail: toxic content detected in reasoning', reasoningCheck.reason);
+      result.match.reasoning = null; // flag to use bio instead
+    }
+
+    return { passed: true, doctor };
+  }
+
+  // NO-MATCH PATH
+  if (result.no_match) {
+    const nm = result.no_match;
+
+    // Check 1: doctor_id must be a number
+    if (!nm.doctor_id || typeof nm.doctor_id !== 'number') {
+      console.warn('Post-LLM guardrail: no_match doctor_id missing or not a number', nm);
+      return { passed: false, reason: 'invalid_id' };
+    }
+
+    // Check 2: doctor_id must exist in DB list — hallucination detection
+    const doctor = chatState.doctorList.find(d => d.id === nm.doctor_id);
+    if (!doctor) {
+      console.warn('Post-LLM guardrail: no_match doctor_id not found in DB list', nm.doctor_id);
+      return { passed: false, reason: 'hallucinated_id' };
+    }
+
+    // Check 3: reasoning must be a non-empty string
+    if (!nm.reasoning || typeof nm.reasoning !== 'string' || nm.reasoning.trim().length === 0) {
+      console.warn('Post-LLM guardrail: no_match reasoning is empty', nm);
+      return { passed: false, reason: 'empty_reasoning' };
+    }
+
+    // Check 4: gap_reason must be a non-empty string
+    if (!nm.gap_reason || typeof nm.gap_reason !== 'string' || nm.gap_reason.trim().length === 0) {
+      console.warn('Post-LLM guardrail: gap_reason is empty', nm);
+      return { passed: false, reason: 'empty_gap_reason' };
+    }
+
+    // Check 5: toxicity check on reasoning text
+    const reasoningCheck = sanitiseInput(nm.reasoning);
+    if (!reasoningCheck.passed && reasoningCheck.reason !== 'gibberish') {
+      console.warn('Post-LLM guardrail: toxic content in no_match reasoning', reasoningCheck.reason);
+      result.no_match.reasoning = null; // flag to use bio instead
+    }
+
+    return { passed: true, doctor };
+  }
+
+  // Neither match nor no_match present
+  console.warn('Post-LLM guardrail: response has neither match nor no_match');
+  return { passed: false, reason: 'invalid_structure' };
+}
+
+//--------------- POST-LLM GUARDRAIL : validates LLM response before display----------
 
 
 
+//-----------------------------MOCK FUNCTION FOR PROMPT PREVIEW----------------
+// Call this from the browser console after completing intake
+// to preview the exact prompt that will be sent to Gemini
+// previewPrompt()
+function previewPrompt() {
+  fetch('http://127.0.0.1:5000/api/match/prompt-preview', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      patientProfile: chatState.patientProfile,
+      doctorList: chatState.doctorList
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    console.log('=== ASSEMBLED PROMPT ===');
+    console.log(data.prompt);
+    console.log('=== END PROMPT ===');
+  })
+  .catch(err => console.error('Prompt preview failed:', err));
+}
 
 
-
+//-----------------------------MOCK FUNCTION FOR PROMPT PREVIEW----------------
 
 
 
