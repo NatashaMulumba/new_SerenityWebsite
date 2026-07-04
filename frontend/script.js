@@ -8,6 +8,7 @@ const chatState = {
     sessionFor: null,
     ageGroup: null,
     language: null,
+    sessionType: null,
     therapistPrefs: { gender: null, background: null },
     availability: [],
     priorTherapy: null,
@@ -25,15 +26,109 @@ const chatState = {
   }
 };
 
-// List of Keywords that Trigger crisis line
 const CRISIS_KEYWORDS = [
-  'suicide', 'suicidal', 'kill myself', 'end my life', 'want to die',
-  'self harm', 'self-harm', 'cutting myself', 'hurt myself',
-  'no reason to live', 'cant go on', "can't go on", 'hopeless',
-  'overdose', 'not worth living'
+  'suicide', 'suicidal',
+  'kill myself', 'killing myself',
+  'end my life', 'ending my life',
+  'end it all',
+  'self-harm', 'self harm',
+  'hurt myself', 'hurting myself',
+  'cut myself', 'cutting myself',
+  'don\'t want to be here', 'dont want to be here',
+  'no reason to live',
+  'want to die', 'wanted to die', 'wanting to die',
+  'better off dead',
+  'take my life', 'taking my life',
+  'not want to live', 'don\'t want to live'
 ];
 
+// this function checks four 4 checks: crisis words, prompt injection, PII strip, gibberish detection
+function sanitiseInput(text) {
+  const t = text.trim();
 
+   // CHECK 1: Crisis keywords — uses global CRISIS_KEYWORDS array
+  const lowerT = t.toLowerCase();
+  const hasCrisis = CRISIS_KEYWORDS.some(k => lowerT.includes(k));
+  if (hasCrisis) {
+    return { passed: false, reason: 'crisis' };
+  }
+
+  // CHECK 2: Prompt injection detection
+  const injectionPhrases = [
+    'ignore previous instructions', 'ignore all previous',
+    'you are now', 'forget everything', 'forget all previous',
+    'act as', 'act like', 'system prompt', 'disregard',
+    'new instructions', 'override', 'jailbreak',
+    'pretend you are', 'pretend to be', 'your new role'
+  ];
+  const hasInjection = injectionPhrases.some(p => lowerT.includes(p));
+  if (hasInjection) {
+    return { passed: false, reason: 'injection' };
+  }
+
+  // CHECK 3: PII strip (silent, never blocks)
+  let cleaned = t;
+
+  // SA phone numbers: 0XXXXXXXXX or +27XXXXXXXXX
+  cleaned = cleaned.replace(/(\+27|0)[6-8][0-9]{8}/g, '[removed]');
+
+  // Email addresses
+  cleaned = cleaned.replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, '[removed]');
+
+  // SA ID numbers: 13 consecutive digits
+  cleaned = cleaned.replace(/\b\d{13}\b/g, '[removed]');
+
+  // Credit card patterns: 16 digits, optionally spaced or dashed
+  cleaned = cleaned.replace(/\b(\d{4}[\s-]?){3}\d{4}\b/g, '[removed]');
+
+  // CHECK 4: Gibberish detection
+  const emojiOnly = /^[\p{Emoji}\s]+$/u.test(cleaned);
+  const numbersOnly = /^\d+$/.test(cleaned);
+  const repeating = /(.)\1{4,}/.test(cleaned);
+
+  // Word-level vowel check — flag if no word in the input contains a vowel
+  // Catches keyboard mashing like "asdfghjkl zxcvbnm" which the whole-string check misses
+  const words = cleaned.trim().split(/\s+/).filter(w => w.length > 2);
+  const hasRealWord = words.some(w => /[aeiouAEIOU]/.test(w));
+  const allWordsGibberish = words.length > 0 && !hasRealWord;
+
+  // Vowel ratio check — real text has at least 15% vowels across all letters
+  const letters = cleaned.replace(/[^a-zA-Z]/g, '');
+  const vowelCount = (cleaned.match(/[aeiouAEIOU]/g) || []).length;
+  const vowelRatio = letters.length > 6 ? vowelCount / letters.length : 1;
+  const poorVowelRatio = vowelRatio < 0.15;
+
+  if (emojiOnly || numbersOnly || repeating || allWordsGibberish || poorVowelRatio) {
+    return { passed: false, reason: 'gibberish' };
+  }
+
+  // All checks passed
+  return { passed: true, text: cleaned };
+}
+
+// function that appends the bot message to the chat window if sanitisation fails
+function showSanitiseBlockMessage() {
+  showTypingIndicator();
+  setTimeout(() => {
+    hideTypingIndicator();
+    appendBotMessage(
+      "That does not look like a valid response. Please try again in your own words."
+    );
+  }, 600);
+}
+
+// added button locking to prevent flow corruption when users scroll back 
+function lockSiblingButtons(clickedBtn) {
+  const bubble = clickedBtn.closest('.chat-message');
+  if (!bubble) return;
+  const allButtons = bubble.querySelectorAll('button');
+  allButtons.forEach(btn => {
+    btn.disabled = true;
+    btn.style.opacity = '0.4';
+    btn.style.cursor = 'not-allowed';
+    btn.style.pointerEvents = 'none';
+  });
+}
 
 
 
@@ -165,13 +260,33 @@ function appendUserMessage(text) {
   scrollToBottom();
 }
 // Append bot message into a right-aligned bubble
-function appendBotMessage(text) {
+// OLD VERSION
+// function appendBotMessage(text) {
+//   const div = document.createElement('div');
+//   div.classList.add('chat-message', 'bot-message');
+//   div.innerHTML = text;           // innerHTML so we can use <br> and links later
+//   chatMessages.appendChild(div);
+//   scrollToBottom();
+// }
+
+
+// updated appendBotMessage to auto-wire button locking on every menu-option button
+function appendBotMessage(html) {
   const div = document.createElement('div');
   div.classList.add('chat-message', 'bot-message');
-  div.innerHTML = text;           // innerHTML so we can use <br> and links later
-  chatMessages.appendChild(div);
+  div.innerHTML = html;
+
+  // Auto-wire button locking on every menu-option button
+  div.querySelectorAll('button.menu-option').forEach(btn => {
+    const original = btn.getAttribute('onclick');
+    btn.setAttribute('onclick', `lockSiblingButtons(this); ${original}`);
+  });
+
+  document.querySelector('#chat-messages').appendChild(div);
   scrollToBottom();
 }
+
+
 
 //function to redisplay menu options
 function showMenuOptions() {
@@ -196,6 +311,7 @@ function resetToWelcome() {
     sessionFor: null,
     ageGroup: null,
     language: null,
+    sessionType: null,
     therapistPrefs: { gender: null, background: null },
     availability: [],
     priorTherapy: null,
@@ -220,9 +336,10 @@ function handleBrowseTeam() {
       hideTypingIndicator();
 
       chatState.browseList = therapists;
+      chatState.fromMatch = false; // Reset the flag when browsing the team
 
       const buttons = therapists.map(t =>
-        `<button class="therapist-option" onclick="showTherapistCard(${t.id})">
+        `<button class="therapist-option" onclick="lockSiblingButtons(this); showTherapistCard(${t.id})">
           <span class="t-name">Dr ${t.first_name} ${t.last_name}</span>
           <span class="t-spec">${t.title}</span>
         </button>`
@@ -270,6 +387,813 @@ function handleBrowsingCardInput(text) {
     resetToWelcome();
   }
 }
+
+// ----------- BOOKING FLOW -----------------
+
+
+// create a new patient profile and start the intake process
+function startIntake() {
+  chatState.phase = 'intake_q1';
+
+  chatState.patientProfile = {
+    presentingIssue: null,
+    sessionFor: null,
+    ageGroup: null,
+    language: null,
+    sessionType: null,
+    therapistPrefs: { gender: null, background: null },
+    availability: [],
+    priorTherapy: null,
+    priorType: null,
+    priorWorked: null,
+  };
+
+  // Fetch doctor list early so it is ready for the guardrail and LLM call
+  fetch('http://127.0.0.1:5000/api/therapists')
+    .then(res => res.json())
+    .then(data => { chatState.doctorList = data; })
+    .catch(() => { chatState.doctorList = []; });
+
+  showTypingIndicator();
+  setTimeout(() => {
+    hideTypingIndicator();
+    appendBotMessage(
+      "Let's find the right therapist for you. I'll ask a few short questions and " +
+      "it takes about a minute.<br><br>" +
+      "First, in your own words, what's bringing you to therapy? " +
+      "This helps us find someone with the right experience for you."
+    );
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'chat-message bot-message';
+    wrapper.style.padding = '0';
+    wrapper.style.background = 'none';
+    wrapper.id = 'intake-q1-widget';
+    wrapper.innerHTML = `
+      <div class="presenting-widget">
+        <textarea
+          id="intake-presenting-input"
+          class="presenting-textarea"
+          maxlength="300"
+          placeholder="e.g. I've been feeling anxious at work and struggling to sleep..."
+          oninput="intakePresentingCount(this)"
+        ></textarea>
+        <div id="intake-presenting-error" style="
+          font-size: 0.78rem;
+          color: #c0392b;
+          min-height: 18px;
+          padding: 4px 0 0 2px;
+        "></div>
+        <div class="presenting-footer">
+          <span class="presenting-counter" id="intake-presenting-counter">300 characters remaining</span>
+          <button class="presenting-submit" onclick="intakePresentingSubmit()">Continue →</button>
+        </div>
+      </div>
+    `;
+    document.querySelector('#chat-messages').appendChild(wrapper);
+    scrollToBottom();
+    setTimeout(() => document.getElementById('intake-presenting-input')?.focus(), 100);
+  }, 800);
+}
+
+function intakePresentingCount(textarea) {
+  const remaining = 300 - textarea.value.length;
+  const counter = document.getElementById('intake-presenting-counter');
+  if (counter) {
+    counter.textContent = `${remaining} character${remaining === 1 ? '' : 's'} remaining`;
+    counter.style.color = remaining < 50 ? '#c0392b' : '';
+  }
+}
+
+
+//update intakePresentingSubmit function to validate input length and add sanitisation check
+// update intakePresentingSubmit to account for mixed case e.g. gibberish + crisis keywords
+function intakePresentingSubmit() {
+  const input = document.getElementById('intake-presenting-input');
+  const errorEl = document.getElementById('intake-presenting-error');
+  if (!input) return;
+  const value = input.value.trim();
+
+  // Reset error state
+  input.style.borderColor = '';
+  if (errorEl) errorEl.textContent = '';
+
+  // Length check
+  if (value.length < 10) {
+    input.style.borderColor = '#c0392b';
+    if (errorEl) errorEl.textContent = 'Please share a little more. Even a sentence helps us find the right match.';
+    return;
+  }
+
+  // Crisis check first — always before gibberish
+  const lowerVal = value.toLowerCase();
+  const hasCrisis = CRISIS_KEYWORDS.some(k => lowerVal.includes(k));
+  if (hasCrisis) {
+    chatState.crisisDetected = true;
+    chatState.phase = 'crisis';
+    handleCrisis();
+    return;
+  }
+
+  // Sanitise check for injection and gibberish
+  const result = sanitiseInput(value);
+  if (!result.passed) {
+    input.style.borderColor = '#c0392b';
+    if (errorEl) errorEl.textContent = 'That does not look like a valid response. Please try again in your own words.';
+    return;
+  }
+
+  chatState.patientProfile.presentingIssue = result.text;
+  appendUserMessage(result.text.length > 60 ? result.text.substring(0, 60) + '...' : result.text);
+  askIntakeQ2();
+}
+
+
+
+
+
+
+
+// Get the second intake question: Who is this session for? (individual, couple, family, group)
+function askIntakeQ2() {
+  chatState.phase = 'intake_q2';
+
+  showTypingIndicator();
+  setTimeout(() => {
+    hideTypingIndicator();
+    appendBotMessage(
+      "Who is this session for?<br><br>" +
+      "<button class='menu-option' onclick='selectIntakeQ2(\"Individual\")'>🙋 Just me</button>" +
+      "<button class='menu-option' onclick='selectIntakeQ2(\"Couples\")'>👫 My partner and I</button>" +
+      "<button class='menu-option' onclick='selectIntakeQ2(\"Family\")'>👨‍👩‍👧 My family</button>" +
+      "<button class='menu-option' onclick='selectIntakeQ2(\"Group\")'>👥 A group</button>"
+    );
+  }, 800);
+}
+
+function selectIntakeQ2(answer) {
+  chatState.patientProfile.sessionFor = answer;
+  appendUserMessage(answer);
+  if (answer === 'Individual') {
+    askIntakeQ3();
+  } else {
+    chatState.patientProfile.ageGroup = null;
+    askIntakeQ4();
+  }
+}
+
+// Get the third intake question: What age group best describes you? (only for individuals)
+function askIntakeQ3() {
+  chatState.phase = 'intake_q3';
+
+  showTypingIndicator();
+  setTimeout(() => {
+    hideTypingIndicator();
+    appendBotMessage(
+      "What age group best describes you?<br><br>" +
+      "<button class='menu-option' onclick='selectIntakeQ3(\"Child/Teen\")'>🧒 Child or Teen (under 18)</button>" +
+      "<button class='menu-option' onclick='selectIntakeQ3(\"Adult\")'>🧑 Adult (18 to 64)</button>" +
+      "<button class='menu-option' onclick='selectIntakeQ3(\"Elder\")'>🧓 Elder (65+)</button>"
+    );
+  }, 800);
+}
+
+function selectIntakeQ3(answer) {
+  chatState.patientProfile.ageGroup = answer;
+  appendUserMessage(answer);
+  askIntakeQ4();
+}
+
+// function to get the fourth intake question: What language do you prefer for your session?
+function askIntakeQ4() {
+  chatState.phase = 'intake_q4';
+
+  const languages = [
+    'Afrikaans', 'English', 'French', 'Mandarin', 'Northern Sotho',
+    'Ndebele', 'Portuguese', 'Sesotho', 'Spanish', 'Swahili',
+    'Swati', 'Tamil', 'Tsonga', 'Tswana', 'Vietnamese',
+    'Xhosa', 'Zulu'
+  ];
+
+  showTypingIndicator();
+  setTimeout(() => {
+    hideTypingIndicator();
+    appendBotMessage("What language would you prefer your sessions to be in?");
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'chat-message bot-message';
+    wrapper.style.padding = '0';
+    wrapper.style.background = 'none';
+    wrapper.innerHTML = `
+      <div class="intake-dropdown-widget">
+        <select id="intake-language-select" class="intake-dropdown">
+          <option value="" disabled selected>Select a language...</option>
+          ${languages.map(l => `<option value="${l}">${l}</option>`).join('')}
+        </select>
+        <button class="presenting-submit" onclick="handleIntakeQ4()">Continue →</button>
+      </div>
+    `;
+    document.querySelector('#chat-messages').appendChild(wrapper);
+    scrollToBottom();
+  }, 800);
+}
+
+function handleIntakeQ4() {
+  const select = document.getElementById('intake-language-select');
+  const value = select ? select.value : '';
+
+  if (!value) {
+    select.style.borderColor = '#c0392b';
+    return;
+  }
+
+  chatState.patientProfile.language = value;
+  appendUserMessage(value);
+  askIntakeQ5();
+}
+
+// function to get the fifth intake question: Would you prefer your sessions online or in-person?
+function askIntakeQ5() {
+  chatState.phase = 'intake_q5';
+
+  showTypingIndicator();
+  setTimeout(() => {
+    hideTypingIndicator();
+    appendBotMessage(
+      "Would you prefer your sessions online or in-person?<br><br>" +
+      "<button class='menu-option' onclick='selectIntakeQ5(\"Online\")'>💻 Online</button>" +
+      "<button class='menu-option' onclick='selectIntakeQ5(\"In-person\")'>🏢 In-person</button>" +
+      "<button class='menu-option' onclick='selectIntakeQ5(\"No preference\")'>🤷 No preference</button>"
+    );
+  }, 800);
+}
+
+function selectIntakeQ5(answer) {
+  chatState.patientProfile.sessionType = answer;
+  appendUserMessage(answer);
+  askIntakeQ6();
+}
+
+//function to get the sixth intake question: Do you have any preferences for your therapist's
+function askIntakeQ6() {
+  chatState.phase = 'intake_q6';
+
+  showTypingIndicator();
+  setTimeout(() => {
+    hideTypingIndicator();
+    appendBotMessage(
+      "Do you have a preference for your therapist's gender?<br><br>" +
+      "<button class='menu-option' onclick='selectIntakeQ6(\"Female\")'>👩 Female</button>" +
+      "<button class='menu-option' onclick='selectIntakeQ6(\"Male\")'>👨 Male</button>" +
+      "<button class='menu-option' onclick='selectIntakeQ6(\"No preference\")'>🤷 No preference</button>"
+    );
+  }, 800);
+}
+
+function selectIntakeQ6(answer) {
+  chatState.patientProfile.therapistPrefs.gender = answer === 'No preference' ? null : answer;
+  appendUserMessage(answer);
+  askIntakeQ7();
+}
+
+
+//function to get the seventh intake question: Have you seen a therapist before?
+function askIntakeQ7() {
+  chatState.phase = 'intake_q7';
+
+  showTypingIndicator();
+  setTimeout(() => {
+    hideTypingIndicator();
+    appendBotMessage(
+      "Have you seen a therapist before?<br><br>" +
+      "<button class='menu-option' onclick='selectIntakeQ7(\"Yes\")'>Yes</button>" +
+      "<button class='menu-option' onclick='selectIntakeQ7(\"No\")'>No</button>"
+    );
+  }, 800);
+}
+
+function selectIntakeQ7(answer) {
+  chatState.patientProfile.priorTherapy = answer;
+  appendUserMessage(answer);
+
+  if (answer === 'Yes') {
+    askIntakeQ7b();
+  } else {
+    chatState.patientProfile.priorWorked = null;
+    if (preLLMGuardrail()) runLLMMatch(); //Only proceeds if all patientProfile fields are valid and doctor list is loaded.
+  }
+}
+
+function askIntakeQ7b() {
+  chatState.phase = 'intake_q7b';
+
+  showTypingIndicator();
+  setTimeout(() => {
+    hideTypingIndicator();
+    appendBotMessage(
+      "What worked for you, or what didn't? This helps us find an approach that fits.<br><br>" +
+      "<span style='opacity:0.6;font-size:0.85rem;'>Keep it brief, a sentence or two is fine.</span>"
+    );
+  }, 800);
+}
+
+function handleIntakeQ7b(text) {
+  const value = text.trim();
+
+  if (value.length < 5) {
+    showTypingIndicator();
+    setTimeout(() => {
+      hideTypingIndicator();
+      appendBotMessage("Please share just a little more so we can find the best approach for you.");
+    }, 500);
+    return;
+  }
+
+  chatState.patientProfile.priorWorked = value;
+    if (preLLMGuardrail()) runLLMMatch(); //Only proceeds if all patientProfile fields are valid and doctor list is loaded.
+}
+
+
+
+
+
+
+
+
+
+// ----------- BOOKING FLOW -----------------
+
+
+//-------------PRE-LLM -GUARDS---------------------------
+
+// function that checks the patient profile for required fields before sending to LLM
+function preLLMGuardrail() {
+  const p = chatState.patientProfile;
+
+  // 1. Presenting issue
+  if (!p.presentingIssue || p.presentingIssue.trim().length < 10) {
+    handleGuardrailFailure('presentingIssue');
+    return false;
+  }
+
+  // 2. Session for
+  const validSessionFor = ['Individual', 'Couples', 'Family', 'Group'];
+  if (!p.sessionFor || !validSessionFor.includes(p.sessionFor)) {
+    handleGuardrailFailure('sessionFor');
+    return false;
+  }
+
+  // 3. Age group — only required for Individual
+  if (p.sessionFor === 'Individual') {
+    const validAgeGroups = ['Child/Teen', 'Adult', 'Elder'];
+    if (!p.ageGroup || !validAgeGroups.includes(p.ageGroup)) {
+      handleGuardrailFailure('ageGroup');
+      return false;
+    }
+  }
+
+  // 4. Language
+  const validLanguages = [
+    'Afrikaans', 'English', 'French', 'Mandarin', 'Northern Sotho',
+    'Ndebele', 'Portuguese', 'Sesotho', 'Spanish', 'Swahili',
+    'Swati', 'Tamil', 'Tsonga', 'Tswana', 'Vietnamese', 'Xhosa', 'Zulu'
+  ];
+  if (!p.language || !validLanguages.includes(p.language)) {
+    handleGuardrailFailure('language');
+    return false;
+  }
+
+  // 5. Session type
+  const validSessionTypes = ['Online', 'In-person', 'No preference'];
+  if (!p.sessionType || !validSessionTypes.includes(p.sessionType)) {
+    handleGuardrailFailure('sessionType');
+    return false;
+  }
+
+  // 6. Prior therapy
+  if (!p.priorTherapy || !['Yes', 'No'].includes(p.priorTherapy)) {
+    handleGuardrailFailure('priorTherapy');
+    return false;
+  }
+
+  // 7. Doctor list loaded and non-empty
+  if (!chatState.doctorList || chatState.doctorList.length === 0) {
+    handleGuardrailFailure('doctorList');
+    return false;
+  }
+
+  return true;
+}
+
+//function that handles guardrail failures and prompts user to re-enter missing info
+function handleGuardrailFailure(field) {
+  showTypingIndicator();
+  setTimeout(() => {
+    hideTypingIndicator();
+
+    switch (field) {
+      case 'presentingIssue':
+        appendBotMessage("It looks like we lost your presenting issue. Let's go back to that.");
+        setTimeout(() => startIntake(), 2000);
+        break;
+
+      case 'sessionFor':
+        appendBotMessage("Something went wrong with your session selection. Let's try that again.");
+        setTimeout(() => askIntakeQ2(), 2000);
+        break;
+
+      case 'ageGroup':
+        appendBotMessage("We need your age group to find the right match. Let's go back to that.");
+        setTimeout(() => askIntakeQ3(), 2000);
+        break;
+
+      case 'language':
+        appendBotMessage("We need your language preference to continue. Let's go back to that.");
+        setTimeout(() => askIntakeQ4(), 2000);
+        break;
+
+      case 'sessionType':
+        appendBotMessage("We need your session type preference. Let's go back to that.");
+        setTimeout(() => askIntakeQ5(), 2000);
+        break;
+
+      case 'priorTherapy':
+        appendBotMessage("We need to know your therapy history. Let's go back to that.");
+        setTimeout(() => askIntakeQ7(), 2000);
+        break;
+
+      case 'doctorList':
+        appendBotMessage(
+          "We could not load our team right now. Please try again in a moment.<br><br>" +
+          "<button class='menu-option' onclick='startIntake()'>🔄 Try again</button>" +
+          "<button class='menu-option' onclick='sendMessage(\"nav: main menu\")'>🏠 Back to main menu</button>"
+        );
+        break;
+
+      default:
+        appendBotMessage(
+          "Something went wrong. Please try again.<br><br>" +
+          "<button class='menu-option' onclick='startIntake()'>🔄 Start again</button>" +
+          "<button class='menu-option' onclick='sendMessage(\"nav: main menu\")'>🏠 Back to main menu</button>"
+        );
+        break;
+    }
+  }, 600);
+}
+
+
+
+// Sends patientProfile and doctorList to Flask /api/match endpoint.
+// Flask assembles the prompt, calls Gemini, and returns the result.
+// Handles quota errors, network errors, and invalid JSON gracefully.
+function runLLMMatch() {
+  showTypingIndicator();
+
+  fetch('http://127.0.0.1:5000/api/match', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      patientProfile: chatState.patientProfile,
+      doctorList: chatState.doctorList
+    })
+  })
+  .then(res => {
+    if (res.status === 429) throw new Error('quota_exceeded');
+    if (res.status === 503) throw new Error('network_error');
+    if (!res.ok) throw new Error('server_error');
+    return res.json();
+  })
+  .then(data => {
+    hideTypingIndicator();
+    if (data.error) throw new Error(data.error);
+    handleLLMResult(data.result);
+  })
+  .catch(err => {
+    hideTypingIndicator();
+    const msg = err.message || '';
+
+    if (msg === 'quota_exceeded') {
+      appendBotMessage(
+        "SerenityBot's matching is taking a breather and our team is on it. " +
+        "In the meantime, you are welcome to browse our therapists directly or call us to find the right fit.<br><br>" +
+        "<button class='menu-option' onclick='sendMessage(\"👤 Browse the team\")'>👤 Browse the team</button>" +
+        "<button class='menu-option' onclick='sendMessage(\"nav: main menu\")'>🏠 Back to main menu</button>"
+      );
+    } else {
+      appendBotMessage(
+        "We could not complete your match right now. Please try again in a moment, " +
+        "or feel free to browse the team yourself.<br><br>" +
+        "<button class='menu-option' onclick='startIntake()'>🔄 Try again</button>" +
+        "<button class='menu-option' onclick='sendMessage(\"👤 Browse the team\")'>👤 Browse the team</button>"
+      );
+    }
+  });
+}
+
+
+// Receives the parsed Gemini result object.
+// Runs post-LLM guardrail before routing to card or no-match flow.
+function handleLLMResult(result) {
+
+  // Run postLLMGuardrail first : replaces the old inline !doctor check.
+  const guardrail = postLLMGuardrail(result);
+
+  if (!guardrail.passed) {
+    console.warn('Post-LLM guardrail failed:', guardrail.reason);
+
+    //Low confidence gets its own message: not a system error,
+   if (guardrail.reason === 'low_confidence') {
+      handleNoMatch({
+        doctor_id: result.match.doctor_id,
+        reasoning: result.match.reasoning,
+        gap_reason: "perfectly matches all of your preferences"
+      });
+      return;
+    }
+
+    // All other guardrail failures use the generic fallback.
+    appendBotMessage(
+      "We could not verify your match result. Please try again or browse our team directly.<br><br>" +
+      "<button class='menu-option' onclick='lockSiblingButtons(this); startIntake()'>🔄 Try again</button>" +
+      "<button class='menu-option' onclick='lockSiblingButtons(this); sendMessage(\"👤 Browse the team\")'>👤 Browse the team</button>"
+    );
+    return;
+  }
+
+  // guardrail.doctor comes from postLLMGuardrail 
+  if (result.match) {
+    const doctor = guardrail.doctor;
+
+    chatState.selectedDoctor = doctor;
+    chatState.fromMatch = true;
+    // Use reasoning only if it passed the toxicity check.
+    chatState.matchReasoning = result.match.reasoning || null;
+
+    showTypingIndicator();
+    setTimeout(() => {
+      hideTypingIndicator();
+      appendBotMessage("Based on what you have shared, here is your recommended match:");
+      setTimeout(() => {
+        chatState.browseList = chatState.doctorList;
+        chatState.phase = 'browsing_card';
+        showTherapistCard(chatState.selectedDoctor.id, true);
+      }, 600);
+    }, 800);
+
+  } else if (result.no_match) {
+    // fromMatch set here too 
+    chatState.fromMatch = true;
+    handleNoMatch(result.no_match);
+  }
+}
+
+
+
+// Handles the case where LLM could not find a perfect match.
+// Shows the next best closest doctors with a warm explanation, or offers sister centre referral.
+function handleNoMatch(noMatchData) {
+  const gap = noMatchData.gap_reason || 'one of your preferences';
+
+  // Look up the single closest doctor from the DB list
+  const doctor = chatState.doctorList.find(d => d.id === noMatchData.doctor_id);
+
+  showTypingIndicator();
+  setTimeout(() => {
+    hideTypingIndicator();
+
+    // Build gap message 
+    let gapMessage = "We were not able to find a therapist who  " + gap + ".";
+    if (gap.toLowerCase().includes('language') && doctor) {
+      gapMessage += " Our closest match, Dr " + doctor.first_name + " " + doctor.last_name +
+        ", conducts sessions in " + doctor.language + ".";
+    }
+    appendBotMessage(gapMessage);
+
+    setTimeout(() => {
+      if (doctor) {
+        chatState.noMatchDoctor = { ...doctor, matchReasoning: noMatchData.reasoning };
+        chatState.phase = 'browsing_card';
+        chatState.browseList = chatState.doctorList;
+        chatState.fromMatch = true;
+
+        appendBotMessage(
+          "If this is non-negotiable for you, tap <strong>Ubuntu Healing Centre</strong> " +
+          "on the card below and we will connect you with our sister centre who may have exactly who you need. " +
+          "Otherwise, here is our closest match in every other way:"
+        );
+
+        setTimeout(() => {
+          showNoMatchCard(doctor.id, noMatchData.reasoning);
+        }, 800);
+
+      } else {
+        // Doctor ID returned by Gemini does not exist in DB
+        appendBotMessage(
+          "We could not verify the suggested match. Please browse our team directly or contact us.<br><br>" +
+          "<button class='menu-option' onclick='sendMessage(\"👤 Browse the team\")'>👤 Browse the team</button>" +
+          "<button class='menu-option' onclick='showSisterCentreReferral()'>🌿 Ubuntu Healing Centre</button>"
+        );
+      }
+
+    }, 1000);
+
+  }, 800);
+}
+
+
+
+// Renders a therapy card for a no-match suggestion.
+// Shows LLM reasoning acknowledging the gap.
+// Replaces Back to team with Ubuntu Healing Centre button.
+function showNoMatchCard(id, reasoning) {
+  const t = chatState.browseList.find(d => d.id === id);
+  if (!t) return;
+
+  chatState.selectedDoctor = t;
+  const initials = t.first_name.charAt(0) + t.last_name.charAt(0);
+  const displayText = reasoning || t.bio || '';
+
+  appendBotMessage(
+    `<div class="bot-therapist-card">
+      <div class="btc-header">
+        <div class="btc-avatar">${initials}</div>
+        <div>
+          <span class="btc-name">Dr ${t.first_name} ${t.last_name}</span>
+          <span class="btc-title">${t.title} · ${t.specialisation}</span>
+        </div>
+      </div>
+      <div class="btc-body">
+        <p class="btc-bio">${displayText}</p>
+        <span class="btc-fee">R${t.price} / session</span>
+        <div class="btc-actions">
+          <button class="btc-btn-book" onclick="lockSiblingButtons(this); appendUserMessage('Book a session'); startBooking();">Book a session</button>
+          <button class="btc-btn-back" onclick="lockSiblingButtons(this); showSisterCentreReferral();">🌿 Ubuntu Healing Centre</button>
+        </div>
+        <button class="btc-btn-menu" onclick="lockSiblingButtons(this); sendMessage('nav: main menu')">Back to main menu</button>
+      </div>
+    </div>`
+  );
+}
+
+
+
+// Shows the Ubuntu Healing Centre referral message
+function showSisterCentreReferral() {
+  showTypingIndicator();
+  setTimeout(() => {
+    hideTypingIndicator();
+    appendBotMessage(
+      "We want to make sure you find exactly the right support. " +
+      "Our sister centre, <strong>Ubuntu Healing Centre</strong> in Pretoria, has a wider network " +
+      "of specialists and may be able to connect you with a therapist who meets your needs.<br><br>" +
+      "<strong>Phone:</strong> 012 345 6789<br>" +
+      "<strong>Website:</strong> ubuntuhealingcentre.co.za<br>" +
+      "<strong>Address:</strong> 12 Jacaranda Avenue, Pretoria<br><br>" +
+      "They will take good care of you.<br><br>" +
+      "<button class='btc-btn-menu' onclick='sendMessage(\"nav: main menu\")'>🏠 Back to main menu</button>"
+    );
+  }, 800);
+}
+
+
+
+
+//-------------PRE-LLM -GUARDS---------------------------
+
+
+//--------------- POST-LLM GUARDRAIL : validates LLM response before display----------
+
+function postLLMGuardrail(result) {
+
+  // MATCH PATH
+  if (result.match) {
+    const m = result.match;
+
+    // Check 1: doctor_id must be a number
+    if (!m.doctor_id || typeof m.doctor_id !== 'number') {
+      console.warn('Post-LLM guardrail: doctor_id missing or not a number', m);
+      return { passed: false, reason: 'invalid_id' };
+    }
+
+    // Check 2: doctor_id must exist in DB list — hallucination detection
+    const doctor = chatState.doctorList.find(d => d.id === m.doctor_id);
+    if (!doctor) {
+      console.warn('Post-LLM guardrail: doctor_id not found in DB list', m.doctor_id);
+      return { passed: false, reason: 'hallucinated_id' };
+    }
+
+    // Check 3: confidence floor — below 60 is not a confident match
+    if (typeof m.confidence !== 'number' || m.confidence < 60 || m.confidence > 100) {
+      console.warn('Post-LLM guardrail: confidence out of bounds or too low', m.confidence);
+      return { passed: false, reason: 'low_confidence' };
+    }
+
+    // Check 4: reasoning must be a non-empty string
+    if (!m.reasoning || typeof m.reasoning !== 'string' || m.reasoning.trim().length === 0) {
+      console.warn('Post-LLM guardrail: reasoning is empty', m);
+      return { passed: false, reason: 'empty_reasoning' };
+    }
+
+    // Check 5: toxicity check on reasoning text
+    const reasoningCheck = sanitiseInput(m.reasoning);
+    if (!reasoningCheck.passed && reasoningCheck.reason !== 'gibberish') {
+      // Crisis or injection detected in reasoning — discard reasoning, use bio instead
+      console.warn('Post-LLM guardrail: toxic content detected in reasoning', reasoningCheck.reason);
+      result.match.reasoning = null; // flag to use bio instead
+    }
+
+    return { passed: true, doctor };
+  }
+
+  // NO-MATCH PATH
+  if (result.no_match) {
+    const nm = result.no_match;
+
+    // Check 1: doctor_id must be a number
+    if (!nm.doctor_id || typeof nm.doctor_id !== 'number') {
+      console.warn('Post-LLM guardrail: no_match doctor_id missing or not a number', nm);
+      return { passed: false, reason: 'invalid_id' };
+    }
+
+    // Check 2: doctor_id must exist in DB list — hallucination detection
+    const doctor = chatState.doctorList.find(d => d.id === nm.doctor_id);
+    if (!doctor) {
+      console.warn('Post-LLM guardrail: no_match doctor_id not found in DB list', nm.doctor_id);
+      return { passed: false, reason: 'hallucinated_id' };
+    }
+
+    // Check 3: reasoning must be a non-empty string
+    if (!nm.reasoning || typeof nm.reasoning !== 'string' || nm.reasoning.trim().length === 0) {
+      console.warn('Post-LLM guardrail: no_match reasoning is empty', nm);
+      return { passed: false, reason: 'empty_reasoning' };
+    }
+
+    // Check 4: gap_reason must be a non-empty string
+    if (!nm.gap_reason || typeof nm.gap_reason !== 'string' || nm.gap_reason.trim().length === 0) {
+      console.warn('Post-LLM guardrail: gap_reason is empty', nm);
+      return { passed: false, reason: 'empty_gap_reason' };
+    }
+
+    // Check 5: toxicity check on reasoning text
+    const reasoningCheck = sanitiseInput(nm.reasoning);
+    if (!reasoningCheck.passed && reasoningCheck.reason !== 'gibberish') {
+      console.warn('Post-LLM guardrail: toxic content in no_match reasoning', reasoningCheck.reason);
+      result.no_match.reasoning = null; // flag to use bio instead
+    }
+
+    return { passed: true, doctor };
+  }
+
+  // Neither match nor no_match present
+  console.warn('Post-LLM guardrail: response has neither match nor no_match');
+  return { passed: false, reason: 'invalid_structure' };
+}
+
+//--------------- POST-LLM GUARDRAIL : validates LLM response before display----------
+
+
+
+//-----------------------------MOCK FUNCTION FOR PROMPT PREVIEW----------------
+// Call this from the browser console after completing intake
+// to preview the exact prompt that will be sent to Gemini
+// previewPrompt()
+function previewPrompt() {
+  fetch('http://127.0.0.1:5000/api/match/prompt-preview', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      patientProfile: chatState.patientProfile,
+      doctorList: chatState.doctorList
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    console.log('=== ASSEMBLED PROMPT ===');
+    console.log(data.prompt);
+    console.log('=== END PROMPT ===');
+  })
+  .catch(err => console.error('Prompt preview failed:', err));
+}
+
+
+//-----------------------------MOCK FUNCTION FOR PROMPT PREVIEW----------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Validates a single booking field — returns an error string or null if valid
 function validateBookingInput(step, value) {
@@ -341,10 +1265,22 @@ function validateBookingInput(step, value) {
   return null; // valid
 }
 
-// Initialises the booking flow for the selected doctor
+
+// Initialises the booking flow for the selected doctor.
+// If coming from Find My Match, pre-fills prior therapy and presenting concern
+// from patientProfile so the user is not asked again.
 function startBooking() {
   chatState.bookingData = {};
   chatState.bookingStep = 0;
+
+  // Pre-fill fields already collected during Find My Match intake
+  if (chatState.fromMatch) {
+    const p = chatState.patientProfile;
+    chatState.bookingData.prev_therapy = p.priorTherapy || null;
+    chatState.bookingData.prev_detail  = p.priorWorked  || null;
+    chatState.bookingData.presenting   = p.presentingIssue || null;
+  }
+
   const name = `Dr ${chatState.selectedDoctor.first_name} ${chatState.selectedDoctor.last_name}`;
   showTypingIndicator();
   setTimeout(() => {
@@ -362,6 +1298,15 @@ function askBookingQuestion() {
   const b    = chatState.bookingData;
   const step = chatState.bookingStep;
   const isEditing = Object.keys(b).length > 0;
+
+  // Skip steps already answered by Find My Match intake
+  if (chatState.fromMatch) {
+    if (step === 7 || step === 8 || step === 9) {
+      chatState.bookingStep++;
+      askBookingQuestion();
+      return;
+    }
+  }
 
   function hint(val) {
     return isEditing && val
@@ -474,7 +1419,27 @@ function handleBookingInput(text) {
     return;
   }
 
-  // Validate before storing
+  // Run sanitiseInput on free text fields before validating
+  const freeTextSteps = [0, 4, 5, 8, 9, 10];
+  if (freeTextSteps.includes(step)) {
+    const sanitised = sanitiseInput(trimmed);
+    if (!sanitised.passed) {
+      if (sanitised.reason === 'crisis') {
+        chatState.crisisDetected = true;
+        chatState.phase = 'crisis';
+        handleCrisis();
+        return;
+      }
+      showTypingIndicator();
+      setTimeout(() => {
+        hideTypingIndicator();
+        appendBotMessage("That does not look like a valid response. Please try again in your own words.");
+      }, 500);
+      return;
+    }
+  }
+
+  // Validate format before storing
   const error = validateBookingInput(step, trimmed);
   if (error) {
     showTypingIndicator();
@@ -482,7 +1447,7 @@ function handleBookingInput(text) {
       hideTypingIndicator();
       appendBotMessage(` ${error}`);
     }, 500);
-    return; // stay on same step
+    return;
   }
 
   // Store the validated answer
@@ -633,7 +1598,7 @@ function buildCalendarWidget() {
     const daysInMonth  = new Date(viewYear, viewMonth + 1, 0).getDate();
 
     // Cut-off: today is the earliest bookable date
-    const todayStr = today.toISOString().split('T')[0];
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
 
     // 8-week limit from today
     const maxDate = new Date(today);
@@ -656,7 +1621,7 @@ function buildCalendarWidget() {
       const dateObj  = new Date(viewYear, viewMonth, d);
       const dateStr  = `${viewYear}-${String(viewMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
       const dayName  = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][dateObj.getDay()];
-      const isPast   = dateStr < todayStr;
+      const isPast   = dateStr <= todayStr;
       const isFuture = dateObj > maxDate;
       const isWorking = workingDays.includes(dayName);
       const disabled  = isPast || isFuture || !isWorking;
@@ -767,6 +1732,7 @@ function showBookingSummary() {
         <div class="bsc-row"><span class="bsc-label">Therapist</span><span class="bsc-value">${doctorName}</span></div>
         <div class="bsc-row"><span class="bsc-label">Date</span><span class="bsc-value">${formatCalDate(d.appt_date)}</span></div>
         <div class="bsc-row"><span class="bsc-label">Time</span><span class="bsc-value">${d.appt_time}</span></div>
+        <div class="bsc-row"><span class="bsc-label">Session</span><span class="bsc-value">${d.session_type}</span></div> 
         <div class="bsc-row"><span class="bsc-label">Name</span><span class="bsc-value">${d.patient_name}</span></div>
         <div class="bsc-row"><span class="bsc-label">Date of birth</span><span class="bsc-value">${d.patient_dob}</span></div>
         <div class="bsc-row"><span class="bsc-label">Phone</span><span class="bsc-value">${d.patient_phone}</span></div>
@@ -807,7 +1773,8 @@ function writeBooking() {
       presenting:        b.presenting,
       medications:       b.medications,
       appt_date:         b.appt_date,
-      appt_time:         b.appt_time
+      appt_time:         b.appt_time,
+      session_type:      chatState.patientProfile.sessionType === 'Online' ? 'Online' : 'In-person'
     })
   })
   .then(res => res.json())
@@ -831,8 +1798,10 @@ function writeBooking() {
         <div class="bcc-note">
           Your session with <strong>${doctorName}</strong> is confirmed for
           <strong>${formatCalDate(b.appt_date)} at ${b.appt_time}</strong>.<br><br>
-          A confirmation email has been sent to ${b.patient_email}. Payment and medical aid details will be handled on arrival.,
-          30–45 minutes before your first session. Please bring your ID and medical aid card.
+          A confirmation email has been sent to ${b.patient_email}. 
+          ${chatState.patientProfile.sessionType === 'Online' 
+            ? 'Our receptionist Cleo will be in contact with you before your session with a secure video link and any details you need.' 
+            : 'Please arrive 30 to 45 minutes early to complete your intake forms and arrange payment and medical aid. Bring your ID and medical aid card.'}
         </div>
       </div>
     `;
@@ -993,21 +1962,15 @@ function writeBooking() {
 }
 
 
-
-
-
-
-
- 
-
 // Render the full detail card for the selected therapist
-function showTherapistCard(id) {
+function showTherapistCard(id, showReasoning = false) {
   const t = chatState.browseList.find(d => d.id === id);
   if (!t) return;
 
   chatState.selectedDoctor = t;
 
   const initials = t.first_name.charAt(0) + t.last_name.charAt(0);
+  const displayText = showReasoning && chatState.matchReasoning ? chatState.matchReasoning : t.bio;
 
   appendBotMessage(
     `<div class="bot-therapist-card">
@@ -1019,13 +1982,13 @@ function showTherapistCard(id) {
         </div>
       </div>
       <div class="btc-body">
-        <p class="btc-bio">${t.bio}</p>
-        <span class="btc-fee"> R${t.price} / session</span>
+        <p class="btc-bio">${displayText}</p>
+        <span class="btc-fee">R${t.price} / session</span>
         <div class="btc-actions">
-          <button class="btc-btn-book" onclick="appendUserMessage('Book a session'); startBooking();">Book a session</button>
-          <button class="btc-btn-back" onclick="sendMessage('nav: back to team')">Back to team</button>
+          <button class="btc-btn-book" onclick="lockSiblingButtons(this); appendUserMessage('Book a session'); startBooking();">Book a session</button>
+          <button class="btc-btn-back" onclick="lockSiblingButtons(this); sendMessage('nav: back to team')">Back to team</button>
         </div>
-        <button class="btc-btn-menu" onclick="sendMessage('nav: main menu')">Back to main menu</button>
+        <button class="btc-btn-menu" onclick="lockSiblingButtons(this); sendMessage('nav: main menu')">Back to main menu</button>
       </div>
     </div>`
   );
@@ -1076,6 +2039,18 @@ function handleCrisisClosing(text) {
 }
 // function to switch between different states 
 function handlePhase(text) {
+  const lower = text.toLowerCase().trim();
+
+  // Global navigation : intercept before any phase-specific handling
+  if (lower === 'nav: main menu') {
+    resetToWelcome();
+    return;
+  }
+
+  if (lower === 'nav: back to team') {
+    handleBrowseTeam();
+    return;
+  }
   switch (chatState.phase) {
     case 'menu':
       handleMenuInput(text);
@@ -1123,6 +2098,36 @@ function handlePhase(text) {
     case 'booking_cancel_confirm':
       handleCancelConfirm(text);
       break;
+    case 'intake_q1':
+      break;
+    case 'intake_q2':
+      appendBotMessage("Please tap one of the options above so I can find the right match for you.");
+      break;
+    case 'intake_q3':
+      appendBotMessage("Please tap an age group above to continue.");
+      break;
+    case 'intake_q4': {
+        const oldWidget = document.querySelector('.intake-dropdown-widget');
+        if (oldWidget) {
+          const oldContainer = oldWidget.closest('.chat-message');
+          if (oldContainer) oldContainer.remove();
+        }
+        appendBotMessage("Please use the dropdown below to select your preferred language.");
+        setTimeout(() => askIntakeQ4(), 2000);
+        break;
+      }
+    case 'intake_q5':
+      appendBotMessage("Please tap your session preference above to continue.");
+      break;
+    case 'intake_q6':
+      appendBotMessage("Please tap your preference above to continue.");
+      break;
+    case 'intake_q7':
+      appendBotMessage("Please tap Yes or No above to continue.");
+      break;
+    case 'intake_q7b':
+      handleIntakeQ7b(text);
+      break;
     default:
       break;
   }
@@ -1159,7 +2164,7 @@ function handleMenuInput(text) {
   const lower = text.toLowerCase();
 
   if (lower.includes('find my match') || lower.includes('🔍')) {
-    chatState.phase = 'intake_q1';
+    startIntake();
     // handleQ1() will go here next session
   } else if (lower.includes('browse the team') || lower.includes('👤')) {
      handleBrowseTeam();
@@ -1241,12 +2246,12 @@ function handleFAQInput(text) {
     setTimeout(() => {
       appendBotMessage(
         "Do you have another question?<br><br>" +
-        "<button class='menu-option' onclick='sendMessage(\"yes another question\")'>❓ Yes, another question</button>" +
-        "<button class='menu-option' onclick='sendMessage(\"no find match\")'>🔍 No, help me find a match</button>" +
-        "<button class='menu-option' onclick='sendMessage(\"no thanks faq done\")'>✅ No thanks, I'm done</button>"
+        "<button class='menu-option' onclick='lockSiblingButtons(this); handleFAQ()'>❓ Yes, another question</button>" +
+        "<button class='menu-option' onclick='lockSiblingButtons(this); startIntake()'>🔍 No, help me find a match</button>" +
+        "<button class='menu-option' onclick='lockSiblingButtons(this); resetToWelcome()'>✅ No thanks, I'm done</button>"
       );
-      chatState.phase = 'faq_closing';
-    }, 12000);
+     
+    }, 6000);
   }, 1000);
 }
 
