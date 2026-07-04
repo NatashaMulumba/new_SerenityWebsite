@@ -1732,6 +1732,7 @@ function showBookingSummary() {
         <div class="bsc-row"><span class="bsc-label">Therapist</span><span class="bsc-value">${doctorName}</span></div>
         <div class="bsc-row"><span class="bsc-label">Date</span><span class="bsc-value">${formatCalDate(d.appt_date)}</span></div>
         <div class="bsc-row"><span class="bsc-label">Time</span><span class="bsc-value">${d.appt_time}</span></div>
+        <div class="bsc-row"><span class="bsc-label">Session</span><span class="bsc-value">${d.session_type}</span></div> 
         <div class="bsc-row"><span class="bsc-label">Name</span><span class="bsc-value">${d.patient_name}</span></div>
         <div class="bsc-row"><span class="bsc-label">Date of birth</span><span class="bsc-value">${d.patient_dob}</span></div>
         <div class="bsc-row"><span class="bsc-label">Phone</span><span class="bsc-value">${d.patient_phone}</span></div>

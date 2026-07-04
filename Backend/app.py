@@ -16,6 +16,8 @@ CORS(app)
 load_dotenv()
 client = genai.Client(api_key=os.getenv('GEMINI_API'))
 
+INTERCEPT_EMAILS = True
+DEVELOPER_EMAIL = os.getenv('DEVELOPER_EMAIL')
 
 # Configure Flask-Mail using environment variables
 app.config['MAIL_SERVER']   = os.getenv('MAIL_SERVER')
@@ -288,9 +290,10 @@ def get_availability():
 # Send booking confirmation email to the patient
 def send_confirmation_email(to_email, data, reference):
     try:
+       
         msg = Message(
-            subject="Your Serenity Wellness Centre Booking Confirmation",
-            recipients=[to_email]
+            subject=f"[TEST - for {to_email}] Your Serenity Wellness Centre Booking Confirmation",
+            recipients=[DEVELOPER_EMAIL]
         )
         msg.html = f"""
         <div style="font-family: Inter, sans-serif; max-width: 600px; margin: 0 auto; color: #2b2a26;">
@@ -356,7 +359,7 @@ def send_confirmation_email(to_email, data, reference):
         </div>
         """
         mail.send(msg)
-        print(f"Email sent successfully to {to_email}")
+        print(f"Email sent successfully to {to_email} (intercepted to {DEVELOPER_EMAIL})")
         return True
     except Exception as e:
         print(f"Email error: {e}")
@@ -425,7 +428,8 @@ def create_booking():
                 'patient_name': data['patient_name'],
                 'doctor_name':  doctor_name,
                 'appt_date':    data['appt_date'],
-                'appt_time':    data['appt_time']
+                'appt_time':    data['appt_time'],
+                'session_type': data.get('session_type', 'In-person')
             },
             reference=ref
         )
@@ -452,7 +456,7 @@ def match_therapist():
 
         # Call Gemini
         from google import genai
-        client = genai.Client(api_key=os.environ.get('GEMINI_API_KEY'))
+        client = genai.Client(api_key=os.environ.get('GEMINI_API'))
         response = client.models.generate_content(
             model='gemini-2.5-flash',
             contents=prompt
@@ -476,6 +480,7 @@ def match_therapist():
 
     except Exception as e:
         error_str = str(e)
+        print(f"GEMINI ERROR DETAIL: {error_str}")   # temporary, remove after diagnosing
         if '429' in error_str or 'quota' in error_str.lower() or 'exhausted' in error_str.lower():
             return jsonify({'error': 'quota_exceeded'}), 429
         if 'timeout' in error_str.lower() or 'connection' in error_str.lower():
