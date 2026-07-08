@@ -1,0 +1,18 @@
+INSERT INTO languages (name) VALUES
+('English'),
+('Afrikaans'),
+('Zulu'),
+('Xhosa'),
+('French'),
+('Sesotho'),
+('Tswana'),
+('Tamil'),
+('Swati'),
+('Portuguese'),
+('Ndebele'),
+('Spanish'),
+('Mandarin'),
+('Vietnamese'),
+('Tsonga'),
+('Swahili'),
+('Northern Sotho');
