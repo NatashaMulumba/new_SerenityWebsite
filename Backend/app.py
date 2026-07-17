@@ -178,9 +178,21 @@ def get_therapists():
         cursor = conn.cursor(dictionary=True) # convert row to dictionary format
         # query doctors from Database
         cursor.execute( """
-                       SELECT id, first_name, last_name, title, specialisation, approach, language, session_type, age_group, participants, gender, bio, price
-                       FROM doctors
-                       ORDER by last_name
+                        SELECT
+                            d.id, d.first_name, d.last_name, d.title,
+                            GROUP_CONCAT(DISTINCT s.name ORDER BY s.name SEPARATOR ', ') AS specialisation,
+                            GROUP_CONCAT(DISTINCT a.name ORDER BY a.name SEPARATOR ', ') AS approach,
+                            GROUP_CONCAT(DISTINCT l.name ORDER BY l.name SEPARATOR ', ') AS language,
+                            d.session_type, d.age_group, d.participants, d.gender, d.bio, d.price
+                        FROM doctors d
+                        LEFT JOIN doctor_specialisations ds ON d.id = ds.doctor_id
+                        LEFT JOIN specialisations s ON ds.specialisation_id = s.specialisation_id
+                        LEFT JOIN doctor_approaches da ON d.id = da.doctor_id
+                        LEFT JOIN approaches a ON da.approach_id = a.approach_id
+                        LEFT JOIN doctor_languages dl ON d.id = dl.doctor_id
+                        LEFT JOIN languages l ON dl.language_id = l.language_id
+                        GROUP BY d.id
+                        ORDER BY d.last_name
                        """
         )
         therapists = cursor.fetchall() # add rows found into a list
