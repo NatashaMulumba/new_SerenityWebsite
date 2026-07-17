@@ -716,11 +716,6 @@ function handleIntakeQ7b(text) {
 
 
 
-
-
-
-
-
 // ----------- BOOKING FLOW -----------------
 
 
@@ -1150,48 +1145,6 @@ function postLLMGuardrail(result) {
 }
 
 //--------------- POST-LLM GUARDRAIL : validates LLM response before display----------
-
-
-
-//-----------------------------MOCK FUNCTION FOR PROMPT PREVIEW----------------
-// Call this from the browser console after completing intake
-// to preview the exact prompt that will be sent to Gemini
-// previewPrompt()
-function previewPrompt() {
-  fetch('http://127.0.0.1:5000/api/match/prompt-preview', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      patientProfile: chatState.patientProfile,
-      doctorList: chatState.doctorList
-    })
-  })
-  .then(res => res.json())
-  .then(data => {
-    console.log('=== ASSEMBLED PROMPT ===');
-    console.log(data.prompt);
-    console.log('=== END PROMPT ===');
-  })
-  .catch(err => console.error('Prompt preview failed:', err));
-}
-
-
-//-----------------------------MOCK FUNCTION FOR PROMPT PREVIEW----------------
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

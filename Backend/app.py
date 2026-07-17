@@ -178,9 +178,36 @@ def get_therapists():
         cursor = conn.cursor(dictionary=True) # convert row to dictionary format
         # query doctors from Database
         cursor.execute( """
-                       SELECT id, first_name, last_name, title, specialisation, approach, language, session_type, age_group, participants, gender, bio, price
-                       FROM doctors
-                       ORDER by last_name
+                         SELECT
+                        d.id, d.first_name, d.last_name, d.title,
+                        GROUP_CONCAT(DISTINCT s.name ORDER BY s.name SEPARATOR ', ') AS specialisation,
+                        GROUP_CONCAT(DISTINCT a.name ORDER BY a.name SEPARATOR ', ') AS approach,
+                        GROUP_CONCAT(DISTINCT l.name ORDER BY l.name SEPARATOR ', ') AS language,
+                        CONCAT_WS(', ',
+                            IF(d.offers_online, 'Online', NULL),
+                            IF(d.offers_in_person, 'In-person', NULL)
+                        ) AS session_type,
+                        CONCAT_WS(', ',
+                            IF(d.sees_child_teen, 'Child/Teen', NULL),
+                            IF(d.sees_adult, 'Adult', NULL),
+                            IF(d.sees_elder, 'Elder', NULL)
+                        ) AS age_group,
+                        CONCAT_WS(', ',
+                            IF(d.sees_individuals, 'Individuals', NULL),
+                            IF(d.sees_couples, 'Couples', NULL),
+                            IF(d.sees_family, 'Family', NULL),
+                            IF(d.sees_group, 'Group', NULL)
+                        ) AS participants,
+                        d.gender, d.bio, d.price
+                    FROM doctors d
+                    LEFT JOIN doctor_specialisations ds ON d.id = ds.doctor_id
+                    LEFT JOIN specialisations s ON ds.specialisation_id = s.specialisation_id
+                    LEFT JOIN doctor_approaches da ON d.id = da.doctor_id
+                    LEFT JOIN approaches a ON da.approach_id = a.approach_id
+                    LEFT JOIN doctor_languages dl ON d.id = dl.doctor_id
+                    LEFT JOIN languages l ON dl.language_id = l.language_id
+                    GROUP BY d.id
+                    ORDER BY d.last_name
                        """
         )
         therapists = cursor.fetchall() # add rows found into a list
@@ -192,54 +219,6 @@ def get_therapists():
     
 
 
-#-------------------------------- CREATE MOCK MATCH TO TEST BEFORE PROMPTING LLM --------------------------------
-
-#MOCK MATCH ENDPOINT :swap mock_result to test different scenarios
-@app.route('/api/match/mock', methods=['POST'])
-def match_therapist_mock():
-
-    # Swap this object to test different scenarios from serenitybot_test_cases.md
-    # Current scenario: Test Case 1 — Individual, exact match
-    mock_result = {
-    "result": {
-        "match": {
-            "doctor_id": 9,
-            "reasoning": "Dr Tony Livingston specialises in life transitions and grief using positive psychology and narrative therapy. His strengths-focused approach is well matched to your search for renewed purpose after retirement.",
-            "confidence": 89
-        },
-        "no_match": None,
-        "gap_reason": None
-    }
-}
-
-    return jsonify(mock_result), 200
-
-
-
-# ROMPT PREVIEW ENDPOINT : returns assembled prompt without calling Gemini
-@app.route('/api/match/prompt-preview', methods=['POST'])
-def preview_prompt():
-    try:
-        data = request.get_json()
-        patient_profile = data.get('patientProfile')
-        doctor_list = data.get('doctorList')
-
-        if not patient_profile or not doctor_list:
-            return jsonify({'error': 'Missing patientProfile or doctorList'}), 400
-
-        prompt = build_match_prompt(patient_profile, doctor_list)
-        return jsonify({'prompt': prompt}), 200
-
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
-
-
-
-
-
-#-------------------------------- CREATE MOCK MATCH TO TEST BEFORE PROMPTING LLM --------------------------------
     
 #  get available days and times for each doctor
 @app.route('/api/availability', methods=['GET'])

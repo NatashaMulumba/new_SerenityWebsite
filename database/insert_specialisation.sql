@@ -1,0 +1,18 @@
+INSERT INTO specialisations (name) VALUES
+('Personality Disorders'),
+('Mood Disorders'),
+('Grief'),
+('Depression'),
+('Relationship Issues'),
+('Trauma and PTSD'),
+('Trauma'),
+('Identity'),
+('Anxiety'),
+('Life Transitions'),
+('Financial Psychology'),
+('Workplace Stress and Burnout'),
+('Career Guidance'),
+('Sleep and Insomnia'),
+('Coping Skills'),
+('Family Conflict'),
+('Emotional Disturbance');

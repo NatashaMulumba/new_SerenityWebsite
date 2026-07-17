@@ -1,4 +1,4 @@
-INSERT INTO availability (doctor_id, day) VALUES
+INSERT INTO availability (doctor_id, day_of_week) VALUES
 (1, 'Monday'), (1, 'Wednesday'), (1, 'Friday'),
 (2, 'Tuesday'), (2, 'Thursday'), (2, 'Saturday'),
 (3, 'Monday'), (3, 'Tuesday'), (3, 'Thursday'),
