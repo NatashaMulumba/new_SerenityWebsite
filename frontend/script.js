@@ -523,10 +523,10 @@ function askIntakeQ2() {
     hideTypingIndicator();
     appendBotMessage(
       "Who is this session for?<br><br>" +
-      "<button class='menu-option' onclick='selectIntakeQ2(\"Individual\")'>🙋 Just me</button>" +
-      "<button class='menu-option' onclick='selectIntakeQ2(\"Couples\")'>👫 My partner and I</button>" +
-      "<button class='menu-option' onclick='selectIntakeQ2(\"Family\")'>👨‍👩‍👧 My family</button>" +
-      "<button class='menu-option' onclick='selectIntakeQ2(\"Group\")'>👥 A group</button>"
+      "<button class='menu-option' onclick='selectIntakeQ2(\"Individual\")'><i class='ti ti-user'></i> Just me</button>" +
+      "<button class='menu-option' onclick='selectIntakeQ2(\"Couples\")'><i class='ti ti-heart'></i> My partner and I</button>" +
+      "<button class='menu-option' onclick='selectIntakeQ2(\"Family\")'><i class='ti ti-home-heart'></i> My family</button>" +
+      "<button class='menu-option' onclick='selectIntakeQ2(\"Group\")'><i class='ti ti-users'></i> A group</button>"
     );
   }, 800);
 }
@@ -551,9 +551,9 @@ function askIntakeQ3() {
     hideTypingIndicator();
     appendBotMessage(
       "What age group best describes you?<br><br>" +
-      "<button class='menu-option' onclick='selectIntakeQ3(\"Child/Teen\")'>🧒 Child or Teen (under 18)</button>" +
-      "<button class='menu-option' onclick='selectIntakeQ3(\"Adult\")'>🧑 Adult (18 to 64)</button>" +
-      "<button class='menu-option' onclick='selectIntakeQ3(\"Elder\")'>🧓 Elder (65+)</button>"
+      "<button class='menu-option' onclick='selectIntakeQ3(\"Child/Teen\")'><i class='ti ti-backpack'></i> Child or Teen (under 18)</button>" +
+      "<button class='menu-option' onclick='selectIntakeQ3(\"Adult\")'><i class='ti ti-user'></i> Adult (18 to 64)</button>" +
+      "<button class='menu-option' onclick='selectIntakeQ3(\"Elder\")'><i class='ti ti-old'></i> Elder (65+)</button>"
     );
   }, 800);
 }
@@ -619,11 +619,11 @@ function askIntakeQ5() {
   showTypingIndicator();
   setTimeout(() => {
     hideTypingIndicator();
-    appendBotMessage(
+   appendBotMessage(
       "Would you prefer your sessions online or in-person?<br><br>" +
-      "<button class='menu-option' onclick='selectIntakeQ5(\"Online\")'>💻 Online</button>" +
-      "<button class='menu-option' onclick='selectIntakeQ5(\"In-person\")'>🏢 In-person</button>" +
-      "<button class='menu-option' onclick='selectIntakeQ5(\"No preference\")'>🤷 No preference</button>"
+      "<button class='menu-option' onclick='selectIntakeQ5(\"Online\")'><i class='ti ti-video'></i> Online</button>" +
+      "<button class='menu-option' onclick='selectIntakeQ5(\"In-person\")'><i class='ti ti-building'></i> In-person</button>" +
+      "<button class='menu-option' onclick='selectIntakeQ5(\"No preference\")'><i class='ti ti-switch-horizontal'></i> No preference</button>"
     );
   }, 800);
 }
@@ -643,9 +643,9 @@ function askIntakeQ6() {
     hideTypingIndicator();
     appendBotMessage(
       "Do you have a preference for your therapist's gender?<br><br>" +
-      "<button class='menu-option' onclick='selectIntakeQ6(\"Female\")'>👩 Female</button>" +
-      "<button class='menu-option' onclick='selectIntakeQ6(\"Male\")'>👨 Male</button>" +
-      "<button class='menu-option' onclick='selectIntakeQ6(\"No preference\")'>🤷 No preference</button>"
+      "<button class='menu-option' onclick='selectIntakeQ6(\"Female\")'><i class='ti ti-woman'></i> Female</button>" +
+      "<button class='menu-option' onclick='selectIntakeQ6(\"Male\")'><i class='ti ti-man'></i> Male</button>" +
+      "<button class='menu-option' onclick='selectIntakeQ6(\"No preference\")'><i class='ti ti-switch-horizontal'></i> No preference</button>"
     );
   }, 800);
 }
@@ -820,16 +820,16 @@ function handleGuardrailFailure(field) {
       case 'doctorList':
         appendBotMessage(
           "We could not load our team right now. Please try again in a moment.<br><br>" +
-          "<button class='menu-option' onclick='startIntake()'>🔄 Try again</button>" +
-          "<button class='menu-option' onclick='sendMessage(\"nav: main menu\")'>🏠 Back to main menu</button>"
+          "<button class='menu-option' onclick='startIntake()'><i class='ti ti-refresh'></i> Try again</button>" +
+          "<button class='menu-option' onclick='sendMessage(\"nav: main menu\")'><i class='ti ti-home'></i> Back to main menu</button>"
         );
         break;
 
       default:
-        appendBotMessage(
+       appendBotMessage(
           "Something went wrong. Please try again.<br><br>" +
-          "<button class='menu-option' onclick='startIntake()'>🔄 Start again</button>" +
-          "<button class='menu-option' onclick='sendMessage(\"nav: main menu\")'>🏠 Back to main menu</button>"
+          "<button class='menu-option' onclick='startIntake()'><i class='ti ti-refresh'></i> Start again</button>" +
+          "<button class='menu-option' onclick='sendMessage(\"nav: main menu\")'><i class='ti ti-home'></i> Back to main menu</button>"
         );
         break;
     }
@@ -868,18 +868,18 @@ function runLLMMatch() {
     const msg = err.message || '';
 
     if (msg === 'quota_exceeded') {
-      appendBotMessage(
+     appendBotMessage(
         "SerenityBot's matching is taking a breather and our team is on it. " +
         "In the meantime, you are welcome to browse our therapists directly or call us to find the right fit.<br><br>" +
-        "<button class='menu-option' onclick='sendMessage(\"👤 Browse the team\")'>👤 Browse the team</button>" +
-        "<button class='menu-option' onclick='sendMessage(\"nav: main menu\")'>🏠 Back to main menu</button>"
+        "<button class='menu-option' onclick='sendMessage(\"Browse the team\")'><i class='ti ti-users'></i> Browse the team</button>" +
+        "<button class='menu-option' onclick='sendMessage(\"nav: main menu\")'><i class='ti ti-home'></i> Back to main menu</button>"
       );
     } else {
       appendBotMessage(
         "We could not complete your match right now. Please try again in a moment, " +
         "or feel free to browse the team yourself.<br><br>" +
-        "<button class='menu-option' onclick='startIntake()'>🔄 Try again</button>" +
-        "<button class='menu-option' onclick='sendMessage(\"👤 Browse the team\")'>👤 Browse the team</button>"
+        "<button class='menu-option' onclick='startIntake()'><i class='ti ti-refresh'></i> Try again</button>" +
+        "<button class='menu-option' onclick='sendMessage(\"Browse the team\")'><i class='ti ti-users'></i> Browse the team</button>"
       );
     }
   });
@@ -907,10 +907,10 @@ function handleLLMResult(result) {
     }
 
     // All other guardrail failures use the generic fallback.
-    appendBotMessage(
+   appendBotMessage(
       "We could not verify your match result. Please try again or browse our team directly.<br><br>" +
-      "<button class='menu-option' onclick='lockSiblingButtons(this); startIntake()'>🔄 Try again</button>" +
-      "<button class='menu-option' onclick='lockSiblingButtons(this); sendMessage(\"👤 Browse the team\")'>👤 Browse the team</button>"
+      "<button class='menu-option' onclick='lockSiblingButtons(this); startIntake()'><i class='ti ti-refresh'></i> Try again</button>" +
+      "<button class='menu-option' onclick='lockSiblingButtons(this); sendMessage(\"Browse the team\")'><i class='ti ti-users'></i> Browse the team</button>"
     );
     return;
   }
@@ -985,8 +985,8 @@ function handleNoMatch(noMatchData) {
         // Doctor ID returned by Gemini does not exist in DB
         appendBotMessage(
           "We could not verify the suggested match. Please browse our team directly or contact us.<br><br>" +
-          "<button class='menu-option' onclick='sendMessage(\"👤 Browse the team\")'>👤 Browse the team</button>" +
-          "<button class='menu-option' onclick='showSisterCentreReferral()'>🌿 Ubuntu Healing Centre</button>"
+          "<button class='menu-option' onclick='sendMessage(\"Browse the team\")'><i class='ti ti-users'></i> Browse the team</button>" +
+          "<button class='menu-option' onclick='showSisterCentreReferral()'><i class='ti ti-leaf'></i> Ubuntu Healing Centre</button>"
         );
       }
 
@@ -1022,9 +1022,9 @@ function showNoMatchCard(id, reasoning) {
         <span class="btc-fee">R${t.price} / session</span>
         <div class="btc-actions">
           <button class="btc-btn-book" onclick="lockSiblingButtons(this); appendUserMessage('Book a session'); startBooking();">Book a session</button>
-          <button class="btc-btn-back" onclick="lockSiblingButtons(this); showSisterCentreReferral();">🌿 Ubuntu Healing Centre</button>
+          <button class="btc-btn-back" onclick="lockSiblingButtons(this); showSisterCentreReferral();"><i class="ti ti-leaf"></i> Ubuntu Healing Centre</button>
         </div>
-        <button class="btc-btn-menu" onclick="lockSiblingButtons(this); sendMessage('nav: main menu')">Back to main menu</button>
+        <button class="btc-btn-menu" onclick="lockSiblingButtons(this); sendMessage('nav: main menu')"><i class="ti ti-home"></i> Back to main menu</button>
       </div>
     </div>`
   );
@@ -1045,7 +1045,7 @@ function showSisterCentreReferral() {
       "<strong>Website:</strong> ubuntuhealingcentre.co.za<br>" +
       "<strong>Address:</strong> 12 Jacaranda Avenue, Pretoria<br><br>" +
       "They will take good care of you.<br><br>" +
-      "<button class='btc-btn-menu' onclick='sendMessage(\"nav: main menu\")'>🏠 Back to main menu</button>"
+      "<button class='btc-btn-menu' onclick='sendMessage(\"nav: main menu\")'><i class='ti ti-home'></i> Back to main menu</button>"
     );
   }, 800);
 }
@@ -1764,8 +1764,8 @@ function writeBooking() {
     setTimeout(() => {
       appendBotMessage(
         "Is there anything else I can help you with?<br><br>" +
-        "<button class='menu-option' onclick='sendMessage(\"book another session\")'>📅 Book another session</button>" +
-        "<button class='menu-option' onclick='sendMessage(\"nav: main menu\")'>🏠 Back to main menu</button>"
+        "<button class='menu-option' onclick='sendMessage(\"book another session\")'><i class='ti ti-calendar-event'></i> Book another session</button>" +
+        "<button class='menu-option' onclick='sendMessage(\"nav: main menu\")'><i class='ti ti-home'></i> Back to main menu</button>"
       );
       chatState.phase = 'booking_complete';
     }, 800);
@@ -1902,8 +1902,8 @@ function writeBooking() {
     setTimeout(() => {
       appendBotMessage(
         "Is there anything else I can help you with?<br><br>" +
-        "<button class='menu-option' onclick='sendMessage(\"👤 Browse the team\")'>📅 Book another session</button>" +
-        "<button class='menu-option' onclick='sendMessage(\"nav: main menu\")'>🏠 Back to main menu</button>"
+        "<button class='menu-option' onclick='sendMessage(\"Browse the team\")'><i class='ti ti-users'></i> Browse the team</button>" +
+        "<button class='menu-option' onclick='sendMessage(\"nav: main menu\")'><i class='ti ti-home'></i> Back to main menu</button>"
       );
       chatState.phase = 'booking_complete';
     }, 800);
@@ -2094,19 +2094,19 @@ function handleFAQ() {
     hideTypingIndicator();
     appendBotMessage(
       "Here are some common questions — tap one to get an answer:<br><br>" +
-      "<button class='menu-option' onclick='sendMessage(\"💰 How much does a session cost?\")'>💰 How much does a session cost?</button>" +
-      "<button class='menu-option' onclick='sendMessage(\"⏱️ How long is a session?\")'>⏱️ How long is a session?</button>" +
-      "<button class='menu-option' onclick='sendMessage(\"💻 Do you offer online sessions?\")'>💻 Do you offer online sessions?</button>" +
-      "<button class='menu-option' onclick='sendMessage(\"🧠 What therapy styles do you offer?\")'>🧠 What therapy styles do you offer?</button>" +
-      "<button class='menu-option' onclick='sendMessage(\"🔒 Is everything confidential?\")'>🔒 Is everything confidential?</button>" +
-      "<button class='menu-option' onclick='sendMessage(\"🌍 What languages are available?\")'>🌍 What languages are available?</button>" +
-      "<button class='menu-option' onclick='sendMessage(\"💳 Do you accept medical aid?\")'>💳 Do you accept medical aid?</button>" +
-      "<button class='menu-option' onclick='sendMessage(\"📅 How do I cancel or reschedule?\")'>📅 How do I cancel or reschedule?</button>" +
-      "<button class='menu-option' onclick='sendMessage(\"🧩 How do I find the right therapist?\")'>🧩 How do I find the right therapist?</button>" +
-      "<button class='menu-option' onclick='sendMessage(\"🌱 I have never done therapy before\")'>🌱 I\'ve never done therapy before</button>" +
-      "<button class='menu-option' onclick='sendMessage(\"👶 Do you work with children?\")'>👶 Do you work with children?</button>" +
-      "<button class='menu-option' onclick='sendMessage(\"👫 Do you offer couples or family therapy?\")'>👫 Do you offer couples or family therapy?</button>" +
-      "<button class='menu-option' onclick='sendMessage(\"🏥 What conditions do you work with?\")'>🏥 What conditions do you work with?</button>"
+      "<button class='menu-option' onclick='sendMessage(\"How much does a session cost?\")'><i class='ti ti-currency-dollar'></i> How much does a session cost?</button>" +
+      "<button class='menu-option' onclick='sendMessage(\"How long is a session?\")'><i class='ti ti-clock'></i> How long is a session?</button>" +
+      "<button class='menu-option' onclick='sendMessage(\"Do you offer online sessions?\")'><i class='ti ti-video'></i> Do you offer online sessions?</button>" +
+      "<button class='menu-option' onclick='sendMessage(\"What therapy styles do you offer?\")'><i class='ti ti-brain'></i> What therapy styles do you offer?</button>" +
+      "<button class='menu-option' onclick='sendMessage(\"Is everything confidential?\")'><i class='ti ti-lock'></i> Is everything confidential?</button>" +
+      "<button class='menu-option' onclick='sendMessage(\"What languages are available?\")'><i class='ti ti-language'></i> What languages are available?</button>" +
+      "<button class='menu-option' onclick='sendMessage(\"Do you accept medical aid?\")'><i class='ti ti-credit-card'></i> Do you accept medical aid?</button>" +
+      "<button class='menu-option' onclick='sendMessage(\"How do I cancel or reschedule?\")'><i class='ti ti-calendar-event'></i> How do I cancel or reschedule?</button>" +
+      "<button class='menu-option' onclick='sendMessage(\"How do I find the right therapist?\")'><i class='ti ti-puzzle'></i> How do I find the right therapist?</button>" +
+      "<button class='menu-option' onclick='sendMessage(\"I have never done therapy before\")'><i class='ti ti-seeding'></i> I\'ve never done therapy before</button>" +
+      "<button class='menu-option' onclick='sendMessage(\"Do you work with children?\")'><i class='ti ti-baby-carriage'></i> Do you work with children?</button>" +
+      "<button class='menu-option' onclick='sendMessage(\"Do you offer couples or family therapy?\")'><i class='ti ti-users'></i> Do you offer couples or family therapy?</button>" +
+      "<button class='menu-option' onclick='sendMessage(\"What conditions do you work with?\")'><i class='ti ti-stethoscope'></i> What conditions do you work with?</button>"
     );
   }, 1000);
 }
@@ -2116,16 +2116,16 @@ function handleFAQ() {
 function handleMenuInput(text) {
   const lower = text.toLowerCase();
 
-  if (lower.includes('find my match') || lower.includes('🔍')) {
+  if (lower.includes('find my match')) {
     startIntake();
     // handleQ1() will go here next session
-  } else if (lower.includes('browse the team') || lower.includes('👤')) {
+  } else if (lower.includes('browse the team')) {
      handleBrowseTeam();
     // handleBrowse() will go here next session
-  } else if (lower.includes('faq') || lower.includes('📋')) {
+  } else if (lower.includes('faq')) {
     handleFAQ();
     // handleFAQ() will go here next session
-  } else if (lower.includes('crisis support') || lower.includes('🆘')) {
+  } else if (lower.includes('crisis support')) {
     chatState.crisisDetected = true;
     chatState.phase = 'crisis';
     handleCrisis();
@@ -2197,11 +2197,11 @@ function handleFAQInput(text) {
     hideTypingIndicator();
     appendBotMessage(answer);
     setTimeout(() => {
-      appendBotMessage(
+     appendBotMessage(
         "Do you have another question?<br><br>" +
-        "<button class='menu-option' onclick='lockSiblingButtons(this); handleFAQ()'>❓ Yes, another question</button>" +
-        "<button class='menu-option' onclick='lockSiblingButtons(this); startIntake()'>🔍 No, help me find a match</button>" +
-        "<button class='menu-option' onclick='lockSiblingButtons(this); resetToWelcome()'>✅ No thanks, I'm done</button>"
+        "<button class='menu-option' onclick='lockSiblingButtons(this); handleFAQ()'><i class='ti ti-help-circle'></i> Yes, another question</button>" +
+        "<button class='menu-option' onclick='lockSiblingButtons(this); startIntake()'><i class='ti ti-search'></i> No, help me find a match</button>" +
+        "<button class='menu-option' onclick='lockSiblingButtons(this); resetToWelcome()'><i class='ti ti-check'></i> No thanks, I'm done</button>"
       );
      
     }, 6000);
@@ -2214,14 +2214,14 @@ function showTherapyStyleGroups() {
   showTypingIndicator();
   setTimeout(() => {
     hideTypingIndicator();
-    appendBotMessage(
+   appendBotMessage(
       "Our therapists work across a wide range of approaches. Choose a category to explore:<br><br>" +
-      "<button class='menu-option' onclick='sendMessage(\"group: Cognitive & Behavioural\")'>🧠 Cognitive & Behavioural</button>" +
-      "<button class='menu-option' onclick='sendMessage(\"group: Depth & Insight\")'>🔍 Depth & Insight</button>" +
-      "<button class='menu-option' onclick='sendMessage(\"group: Relational & Systemic\")'>🤝 Relational & Systemic</button>" +
-      "<button class='menu-option' onclick='sendMessage(\"group: Trauma & Mindfulness\")'>🛡️ Trauma & Mindfulness</button>" +
-      "<button class='menu-option' onclick='sendMessage(\"group: Narrative & Strengths\")'>📖 Narrative & Strengths</button>" +
-      "<button class='menu-option' onclick='sendMessage(\"group: Integrative & Specialist\")'>🔀 Integrative & Specialist</button>"
+      "<button class='menu-option' onclick='sendMessage(\"group: Cognitive & Behavioural\")'><i class='ti ti-brain'></i> Cognitive & Behavioural</button>" +
+      "<button class='menu-option' onclick='sendMessage(\"group: Depth & Insight\")'><i class='ti ti-telescope'></i> Depth & Insight</button>" +
+      "<button class='menu-option' onclick='sendMessage(\"group: Relational & Systemic\")'><i class='ti ti-friends'></i> Relational & Systemic</button>" +
+      "<button class='menu-option' onclick='sendMessage(\"group: Trauma & Mindfulness\")'><i class='ti ti-shield'></i> Trauma & Mindfulness</button>" +
+      "<button class='menu-option' onclick='sendMessage(\"group: Narrative & Strengths\")'><i class='ti ti-book'></i> Narrative & Strengths</button>" +
+      "<button class='menu-option' onclick='sendMessage(\"group: Integrative & Specialist\")'><i class='ti ti-switch-3'></i> Integrative & Specialist</button>"
     );
   }, 1000);
 }
@@ -2366,19 +2366,19 @@ function handleTherapyStyleInput(text) {
 
       if (allSeen) {
         // all styles in this group have been explored
-        appendBotMessage(
+       appendBotMessage(
           "You've explored all the approaches in this group! What would you like to do?<br><br>" +
-          "<button class='menu-option' onclick='sendMessage(\"nav: back to groups\")'>📂 Back to therapy categories</button>" +
-          "<button class='menu-option' onclick='sendMessage(\"nav: back to faqs\")'>❓ Back to FAQs</button>" +
-          "<button class='menu-option' onclick='sendMessage(\"nav: main menu\")'>🏠 Back to main menu</button>"
+          "<button class='menu-option' onclick='sendMessage(\"nav: back to groups\")'><i class='ti ti-folder'></i> Back to therapy categories</button>" +
+          "<button class='menu-option' onclick='sendMessage(\"nav: back to faqs\")'><i class='ti ti-help-circle'></i> Back to FAQs</button>" +
+          "<button class='menu-option' onclick='sendMessage(\"nav: main menu\")'><i class='ti ti-home'></i> Back to main menu</button>"
         );
       } else {
         appendBotMessage(
           "What would you like to do next?<br><br>" +
-          "<button class='menu-option' onclick='sendMessage(\"nav: more styles\")'>🔄 More styles in this group</button>" +
-          "<button class='menu-option' onclick='sendMessage(\"nav: back to groups\")'>📂 Back to therapy categories</button>" +
-          "<button class='menu-option' onclick='sendMessage(\"nav: back to faqs\")'>❓ Back to FAQs</button>" +
-          "<button class='menu-option' onclick='sendMessage(\"nav: main menu\")'>🏠 Back to main menu</button>"
+          "<button class='menu-option' onclick='sendMessage(\"nav: more styles\")'><i class='ti ti-refresh'></i> More styles in this group</button>" +
+          "<button class='menu-option' onclick='sendMessage(\"nav: back to groups\")'><i class='ti ti-folder'></i> Back to therapy categories</button>" +
+          "<button class='menu-option' onclick='sendMessage(\"nav: back to faqs\")'><i class='ti ti-help-circle'></i> Back to FAQs</button>" +
+          "<button class='menu-option' onclick='sendMessage(\"nav: main menu\")'><i class='ti ti-home'></i> Back to main menu</button>"
         );
       }
       chatState.phase = 'therapy_style_closing';
@@ -2408,7 +2408,6 @@ function handleTherapyStyleClosing(text) {
     chatState.phase = 'menu';
   }
 }
-
 
 
 
