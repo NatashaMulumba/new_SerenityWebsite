@@ -292,10 +292,10 @@ function appendBotMessage(html) {
 function showMenuOptions() {
   appendBotMessage(
     "Hi! I'm SerenityBot, the Serenity assistant. How can I help you today?<br><br>" +
-    "<button class='menu-option' onclick='sendMessage(\"🔍 Find my match\")'>🔍 Find my match</button>" +
-    "<button class='menu-option' onclick='sendMessage(\"👤 Browse the team\")'>👤 Browse the team</button>" +
-    "<button class='menu-option' onclick='sendMessage(\"📋 FAQ\")'>📋 FAQ</button>" +
-    "<button class='menu-option' onclick='sendMessage(\"🆘 Crisis support\")'>🆘 Crisis support</button>"
+    "<button class='menu-option' onclick='sendMessage(\"Find my match\")'><i class='ti ti-search'></i> Find my match</button>" +
+    "<button class='menu-option' onclick='sendMessage(\"Browse the team\")'><i class='ti ti-users'></i> Browse the team</button>" +
+    "<button class='menu-option' onclick='sendMessage(\"FAQ\")'><i class='ti ti-clipboard-text'></i> FAQ</button>" +
+    "<button class='menu-option' onclick='sendMessage(\"Crisis support\")'><i class='ti ti-urgent'></i> Crisis support</button>"
   );
 }
 
